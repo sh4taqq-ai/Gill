@@ -1,4 +1,10 @@
-add_library(engine STATIC src/window.cpp)
-
-target_include_directories(engine PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_link_libraries(engine PUBLIC glad)
+add_library(engine STATIC
+        src/window.cpp
+        src/engine.cpp
+        src/shader.cpp
+        include/window.hpp
+        include/engine.hpp
+        include/shader.hpp
+)
+target_include_directories(engine PUBLIC  include)
+target_link_libraries(engine PUBLIC glad glfw mathpp)

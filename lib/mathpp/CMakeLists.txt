@@ -1,3 +1,2 @@
-add_library(mathpp INTERFACE
-        ../engine/src/window.cpp)
+add_library(mathpp INTERFACE)
 target_include_directories(mathpp INTERFACE include)

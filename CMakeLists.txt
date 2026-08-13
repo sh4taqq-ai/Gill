@@ -20,3 +20,7 @@ add_subdirectory(extern/glad)
 add_subdirectory(lib/mathpp)
 add_subdirectory(lib/engine)
 
+add_executable(gill source/gill/main.cpp)
+
+target_link_libraries(gill PRIVATE glad engine)
+
