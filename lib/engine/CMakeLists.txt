@@ -1,15 +1,21 @@
 add_library(engine STATIC
-        src/window.cpp
-        src/engine.cpp
-        src/shader.cpp
-        src/mesh.cpp
-        src/object.cpp
-        include/window.hpp
-        include/engine.hpp
-        include/shader.hpp
-        include/mesh.hpp
-        include/object.hpp
-        include/transform.hpp
+src/core/engine/engine.cpp
+        src/core/window/window.cpp
+        src/component/transform.cpp
+        src/render/mesh/mesh.cpp
+        src/render/shader/shader.cpp
+        src/scene/scene.cpp
+        include/core/engine/engine.hpp
+        include/core/window/window.hpp
+        include/component/transform.hpp
+        include/render/mesh/mesh.hpp
+        include/render/shader/shader.hpp
+        include/render/data/vertex.hpp
+        include/component/mesh.hpp
+        include/component/entity.hpp
+        include/scene/scene.hpp
+        src/component/entity.cpp
 )
-target_include_directories(engine PUBLIC  include)
+
 target_link_libraries(engine PUBLIC glad glfw mathpp)
+target_include_directories(engine PUBLIC include)

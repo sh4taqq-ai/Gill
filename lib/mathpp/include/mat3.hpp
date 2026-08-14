@@ -6,6 +6,8 @@
 #include "constants.hpp"
 #include <cmath>
 
+
+
 namespace mathpp {
     template <typename T>
     struct mat3 {
@@ -73,5 +75,7 @@ namespace mathpp {
     template <typename T>
      T determinant(const mat3<T>& m) {return dot(m.col[0],cross(m.col[1],m.col[2]));}
 
+    using mat3f = mat3<float>;
+    using mat3d = mat3<double>;
 
 }

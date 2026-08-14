@@ -19,6 +19,6 @@ namespace mathpp {
 
     using vec4i = vec4<int>;
     using vec4f = vec4<float>;
-    using vec3d = vec4<double>;
+    using vec4d = vec4<double>;
 
 }

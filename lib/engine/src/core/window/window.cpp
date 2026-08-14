@@ -1,4 +1,4 @@
-#include "window.hpp"
+#include "../include/core/window/window.hpp"
 #include <cassert>
 #include <iostream>
 Window::Window(unsigned int width, unsigned int height,const std::string &title) {

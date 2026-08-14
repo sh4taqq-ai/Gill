@@ -88,7 +88,9 @@ T determinant(const mat4<T>& m) {
         );
         return determinant(upper);
     }
-    }
+    using mat4f = mat4<float>;
+    using mat4d = mat4<double>;
+}
 
 
 
