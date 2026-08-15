@@ -2,6 +2,8 @@
 #include <string>
 #include <memory>
 #include "../window/window.hpp"
+#include "../../scene/scene.hpp"
+#include "../../render/core/renderer.hpp"
 
 class Engine {
 
@@ -12,4 +14,6 @@ public:
 
 private:
     std::unique_ptr<Window> window;
+    Renderer renderer;
+    Scene scene;
 };

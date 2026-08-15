@@ -15,6 +15,10 @@ src/core/engine/engine.cpp
         include/component/entity.hpp
         include/scene/scene.hpp
         src/component/entity.cpp
+        include/render/core/renderer.hpp
+        src/render/core/renderer.cpp
+        include/render/mesh/primitive.hpp
+        src/render/mesh/primitives.cpp
 )
 
 target_link_libraries(engine PUBLIC glad glfw mathpp)
