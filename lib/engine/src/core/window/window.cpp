@@ -36,6 +36,18 @@ void Window::PollEvents() {
     glfwPollEvents();
 }
 
+ GLFWwindow *Window::GetWindow() {
+    return wp;
+}
+
+void Window::GetCursorPos(double &x, double &y) {
+    glfwGetCursorPos(wp, &x, &y);
+}
+
+int Window::GetLeftMouseButton() const {
+    return static_cast<bool>(glfwGetMouseButton(wp, GLFW_MOUSE_BUTTON_LEFT));
+}
+
 Window::~Window() {
     glfwDestroyWindow(wp);
 }

@@ -7,7 +7,23 @@ namespace mathpp {
 
         vec4() : x(0), y(0), z(0), w(0) {}
         vec4(T x, T y, T z, T w) : x(x), y(y), z(z), w(w) {}
+        T& operator[](int i) {
+            switch (i) {
+                case 0: return x;
+                case 1: return y;
+                default: return z;
+            }
+        }
+
+        const T& operator[](int i) const {
+            switch (i) {
+                case 0: return x;
+                case 1: return y;
+                default: return z;
+            }
+        }
     };
+
     template <typename T>
     vec4<T> operator+(const vec4<T>& lhs, const vec4<T>& rhs) {return vec4(lhs.x+rhs.x,lhs.y+rhs.z,lhs.w+rhs.w); }
     template <typename T>

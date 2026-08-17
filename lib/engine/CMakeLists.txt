@@ -19,7 +19,11 @@ src/core/engine/engine.cpp
         src/render/core/renderer.cpp
         include/render/mesh/primitive.hpp
         src/render/mesh/primitives.cpp
+        include/core/component/raycast/raycast.hpp
+        src/core/component/raycast/raycast.cpp
+        include/core/system/selector/selector.hpp
+        src/core/system/selector/selector.cpp
 )
 
-target_link_libraries(engine PUBLIC glad glfw mathpp)
+target_link_libraries(engine PUBLIC glad glfw mathpp imgui)
 target_include_directories(engine PUBLIC include)

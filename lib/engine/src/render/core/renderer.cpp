@@ -4,17 +4,24 @@
 
 #include "scene/scene.hpp"
 
-Renderer::Renderer() {
+void Renderer::Init() {
     glEnable(GL_DEPTH_TEST);
 }
 
-void Renderer::renderScene(const Scene *scene) {
+void Renderer::renderScene(const Scene *scene, const mathpp::mat4f& view, const mathpp::mat4f& projection) {
     const std::unordered_map<Entity, MeshComponent> & meshes = scene->GetAllMeshes();
-    const std::unordered_map<Entity, TransformComponent> & transforms = scene->GetAllTransforms();
 
     for (auto it = meshes.begin(); it != meshes.end(); ++it) {
          const MeshComponent* mesh = &it->second;
          const TransformComponent* transform = scene->GetComponent<TransformComponent>(it->first);
+        mesh->shader->Use();
+        if (transform != nullptr) {
+            mathpp::mat4f mat = transform->getMatrix();
+            mesh->shader->setMat4f("model",mat);
+            mesh->shader->setMat4f("view",view);
+            mesh->shader->setMat4f("projection",projection);
+        }
+        mesh->mesh->Draw();
 
     }
 }

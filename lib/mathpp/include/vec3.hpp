@@ -31,7 +31,9 @@ namespace mathpp {
     template <typename T>
     vec3<T> operator*(const T s, const vec3<T>& rhs){ return vec3<T>(s*rhs.x, s*rhs.y, s*rhs.z); }
     template <typename T>
-    vec3<T> operator*(const vec3<T>& lhs, const T s) { return s * lhs; }
+    vec3<T> operator*(const vec3<T>& lhs, const T s) { return vec3<T>(lhs.x*s, lhs.y*s, lhs.z*s); }
+
+
 
     using vec3f = vec3<float>;
     using vec3d = vec3<double>;

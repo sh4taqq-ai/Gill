@@ -53,4 +53,9 @@ namespace mathpp {
 
     }
 
+    template<typename T>
+    vec3<T> operator/(const vec4<T> & a, T b) {
+        return vec3<T>(a.x/b, a.y/b, a.z/b);
+    }
+
 }

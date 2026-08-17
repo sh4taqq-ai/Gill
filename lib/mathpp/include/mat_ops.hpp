@@ -32,4 +32,6 @@ namespace mathpp {
         );
         return transpose(inverse(upper));
     }
+
+
 }

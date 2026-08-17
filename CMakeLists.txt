@@ -17,10 +17,22 @@ set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(glfw)
 
 add_subdirectory(extern/glad)
+add_subdirectory(extern/imgui)
 add_subdirectory(lib/mathpp)
 add_subdirectory(lib/engine)
 
+
+
+
 add_executable(gill source/gill/main.cpp)
+
+
+
+file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/asset"
+        DESTINATION "${CMAKE_CURRENT_BINARY_DIR}"
+)
+
+
 
 target_link_libraries(gill PRIVATE glad engine)
 

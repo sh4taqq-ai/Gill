@@ -5,6 +5,8 @@
 int main() {
     Engine engine;
     engine.Init(600,800,"my Engine");
+    engine.Run();
+
 
 
 
