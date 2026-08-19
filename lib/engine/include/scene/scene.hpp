@@ -13,6 +13,8 @@ public:
     Entity CreateEntity();
     void DestroyEntity(Entity entity);
 
+
+
     template<typename T>
    const T* GetComponent(Entity entity) const {
         if constexpr (std::is_same_v<T, TransformComponent>) {
@@ -25,15 +27,22 @@ public:
         return nullptr;
     }//the function have to be a const to be able to call the function on a const object
 
-    std::unordered_map<Entity, MeshComponent> GetAllMeshes() const;
-    std::unordered_map<Entity, TransformComponent> GetAllTransforms() const;
+    const std::unordered_map<Entity, MeshComponent>& GetAllMeshes() const;
+    const std::unordered_map<Entity, TransformComponent>& GetAllTransforms() const;
 
     void AddTransform(Entity entity, const TransformComponent& transform);
     void AddMesh(Entity entity, const MeshComponent& mesh);
 
     std::optional<Entity> SelectEntity(const Ray&  ray,float radius) const;
 
+
+    std::optional<Entity> GetSelected() const;
+    void SetSelected(const std::optional<Entity>& value);
+
+
+
     private:
+    std::optional<Entity> selected;
     EntityManager entityManager;
     std::unordered_map<Entity, TransformComponent> transforms;
     std::unordered_map<Entity, MeshComponent> meshes;

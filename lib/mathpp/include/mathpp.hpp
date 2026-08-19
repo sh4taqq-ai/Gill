@@ -9,3 +9,5 @@
 #include "mat4.hpp"
 #include "mat_ops.hpp"
 #include "matrix_transform.hpp"
+#include "euler_angles.hpp"
+#include "quaternion.hpp"

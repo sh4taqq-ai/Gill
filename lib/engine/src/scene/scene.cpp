@@ -19,11 +19,11 @@ Scene::~Scene() {
 
 }
 
-std::unordered_map<Entity, MeshComponent> Scene::GetAllMeshes() const {
+const std::unordered_map<Entity, MeshComponent>& Scene::GetAllMeshes() const {
     return meshes;
 }
 
-std::unordered_map<Entity, TransformComponent> Scene::GetAllTransforms() const {
+const std::unordered_map<Entity, TransformComponent>& Scene::GetAllTransforms() const {
     return transforms;
 }
 
@@ -45,3 +45,11 @@ std::optional<Entity> Scene::SelectEntity(const Ray& ray, float radius) const {
     return std::nullopt;
 }
 
+
+std::optional<Entity> Scene::GetSelected() const {
+    return selected;
+}
+
+void Scene::SetSelected(const std::optional<Entity> &value) {
+    selected = value;
+}

@@ -43,13 +43,16 @@ void Selector::RenderScene(Scene* scene, const mathpp::mat4f& view, const mathpp
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-Entity Selector::ReadEntityAt(int x, int y) const {
+std::optional<Entity> Selector::ReadEntityAt(int x, int y) const {
     glBindFramebuffer(GL_FRAMEBUFFER, FBO);
     int flippedY = hght - y;  // flip since glReadPixels origin is bottom-left
 
     GLint pickedID = -1;
     glReadPixels(x, flippedY, 1, 1, GL_RED_INTEGER, GL_INT, &pickedID);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    if (pickedID == -1)
+    {return std::nullopt;}
 
     return static_cast<Entity>(pickedID);
 }

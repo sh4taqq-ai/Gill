@@ -23,6 +23,12 @@ src/core/engine/engine.cpp
         src/core/component/raycast/raycast.cpp
         include/core/system/selector/selector.hpp
         src/core/system/selector/selector.cpp
+        include/ui/ui.hpp
+        src/ui/ui.cpp
+        include/core/input/input.hpp
+        src/core/input/input.cpp
+        include/core/component/camera/camera.hpp
+        src/core/component/camera/camera.cpp
 )
 
 target_link_libraries(engine PUBLIC glad glfw mathpp imgui)
