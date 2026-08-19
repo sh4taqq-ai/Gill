@@ -281,12 +281,12 @@ CODE
  USING THE EXAMPLE BACKENDS (= imgui_impl_XXX.cpp files from the backends/ folder).
  The sub-folders in examples/ contain examples applications following this structure.
 
-     // Application init: create a dear imgui context, setup some options, load fonts
+     // Application init: create a dear imgui context, setup some options, load font
      ImGui::CreateContext();
      ImGuiIO& io = ImGui::GetIO();
      // TODO: Set optional io.ConfigFlags values, e.g. 'io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard' to enable keyboard controls.
      // TODO: Fill optional fields of the io structure later.
-     // TODO: Load TTF/OTF fonts if you don't want to use the default font.
+     // TODO: Load TTF/OTF font if you don't want to use the default font.
 
      // Initialize helper Platform and Renderer backends (here we are using imgui_impl_win32.cpp and imgui_impl_dx11.cpp)
      ImGui_ImplWin32_Init(hwnd);
@@ -336,13 +336,13 @@ IMPLEMENTING SUPPORT for ImGuiBackendFlags_RendererHasTextures:
 
  Basic application/backend skeleton:
 
-     // Application init: create a Dear ImGui context, setup some options, load fonts
+     // Application init: create a Dear ImGui context, setup some options, load font
      ImGui::CreateContext();
      ImGuiIO& io = ImGui::GetIO();
      // TODO: set io.ConfigXXX values, e.g.
      io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable keyboard controls
 
-     // TODO: Load TTF/OTF fonts if you don't want to use the default font.
+     // TODO: Load TTF/OTF font if you don't want to use the default font.
      io.Fonts->AddFontFromFileTTF("NotoSans.ttf");
 
      // Application main loop
@@ -513,21 +513,21 @@ IMPLEMENTING SUPPORT for ImGuiBackendFlags_RendererHasTextures:
                          As part of the plan to reduce impact of API breaking changes, several unfinished changes/features/refactors related to font and text systems and scaling will be part of subsequent releases (1.92.1+).
                          If you are updating from an old version, and expecting a massive or difficult update, consider first updating to 1.91.9 to reduce the amount of changes.
                        - Hard to read? Refer to 'docs/Changelog.txt' for a less compact and more complete version of this!
-                       - Fonts: **IMPORTANT**: if your app was solving the OSX/iOS Retina screen specific logical vs display scale problem by setting io.DisplayFramebufferScale (e.g. to 2.0f) + setting io.FontGlobalScale (e.g. to 1.0f/2.0f) + loading fonts at scaled sizes (e.g. size X * 2.0f):
+                       - Fonts: **IMPORTANT**: if your app was solving the OSX/iOS Retina screen specific logical vs display scale problem by setting io.DisplayFramebufferScale (e.g. to 2.0f) + setting io.FontGlobalScale (e.g. to 1.0f/2.0f) + loading font at scaled sizes (e.g. size X * 2.0f):
                          This WILL NOT map correctly to the new system! Because font will rasterize as requested size.
                          - With a legacy backend (< 1.92): Instead of setting io.FontGlobalScale = 1.0f/N -> set ImFontCfg::RasterizerDensity = N. This already worked before, but is now pretty much required.
                          - With a new backend (1.92+): This should be all automatic. FramebufferScale is automatically used to set current font RasterizerDensity. FramebufferScale is a per-viewport property provided by backend through the Platform_GetWindowFramebufferScale() handler in 'docking' branch.
-                       - Fonts: **IMPORTANT** on Font Sizing: Before 1.92, fonts were of a single size. They can now be dynamically sized.
+                       - Fonts: **IMPORTANT** on Font Sizing: Before 1.92, font were of a single size. They can now be dynamically sized.
                          - PushFont() API now has a REQUIRED size parameter.
                          - Before 1.92: PushFont() always used font "default" size specified in AddFont() call. It is equivalent to calling PushFont(font, font->LegacySize).
                          - Since  1.92: PushFont(font, 0.0f) preserve the current font size which is a shared value.
                          - To use old behavior: use 'ImGui::PushFont(font, font->LegacySize)' at call site.
                          - Kept inline single parameter function. Will obsolete.
                        - Fonts: **IMPORTANT** on Font Merging:
-                         - When searching for a glyph in multiple merged fonts: we search for the FIRST font source which contains the desired glyph.
+                         - When searching for a glyph in multiple merged font: we search for the FIRST font source which contains the desired glyph.
                            Because the user doesn't need to provide glyph ranges any more, it is possible that a glyph that you expected to fetch from a secondary/merged icon font may be erroneously fetched from the primary font.
-                         - When searching for a glyph in multiple merged fonts: we now search for the FIRST font source which contains the desired glyph. This is technically a different behavior than before!
-                         - e.g. If you are merging fonts you may have glyphs that you expected to load from Font Source 2 which exists in Font Source 1.
+                         - When searching for a glyph in multiple merged font: we now search for the FIRST font source which contains the desired glyph. This is technically a different behavior than before!
+                         - e.g. If you are merging font you may have glyphs that you expected to load from Font Source 2 which exists in Font Source 1.
                            After the update and when using a new backend, those glyphs may now loaded from Font Source 1!
                          - We added `ImFontConfig::GlyphExcludeRanges[]` to specify ranges to exclude from a given font source:
                              // Add Font Source 1 but ignore ICON_MIN_FA..ICON_MAX_FA range
@@ -579,7 +579,7 @@ IMPLEMENTING SUPPORT for ImGuiBackendFlags_RendererHasTextures:
                                 atlas->GetCustomRect(custom_rect_id, &r);
                                 ImGui::Image(atlas->TexRef, ImVec2(r.w, r.h), r.uv0, r.uv1);
                            - We added a redirecting typedef but haven't attempted to magically redirect the field names, as this API is rarely used and the fix is simple.
-                           - Obsoleted AddCustomRectFontGlyph() as the API does not make sense for scalable fonts. Kept existing function which uses the font "default size" (Sources[0]->LegacySize). Added a helper AddCustomRectFontGlyphForSize() which is immediately marked obsolete, but can facilitate transitioning old code.
+                           - Obsoleted AddCustomRectFontGlyph() as the API does not make sense for scalable font. Kept existing function which uses the font "default size" (Sources[0]->LegacySize). Added a helper AddCustomRectFontGlyphForSize() which is immediately marked obsolete, but can facilitate transitioning old code.
                            - Prefer adding a font source (ImFontConfig) using a custom/procedural loader.
                        - DrawList: Renamed ImDrawList::PushTextureID()/PopTextureID() to PushTexture()/PopTexture().
                        - Backends: removed ImGui_ImplXXXX_CreateFontsTexture()/ImGui_ImplXXXX_DestroyFontsTexture() for all backends that had them. They should not be necessary any more.
@@ -601,7 +601,7 @@ IMPLEMENTING SUPPORT for ImGuiBackendFlags_RendererHasTextures:
                             - old behavior altered border size (and therefore layout) based on border color's alpha, which caused variety of problems + old behavior a fixed 1.0f for border size which was not tweakable.
                             - kept legacy signature (will obsolete), which mimics the old behavior,  but uses Max(1.0f, style.ImageBorderSize) when border_col is specified.
                             - added ImageWithBg() function which has both 'bg_col' (which was missing) and 'tint_col'. It was impossible to add 'bg_col' to Image() with a parameter order consistent with other functions, so we decided to remove 'tint_col' and introduce ImageWithBg().
- - 2025/02/25 (1.91.9) - internals: fonts: ImFontAtlas::ConfigData[] has been renamed to ImFontAtlas::Sources[]. ImFont::ConfigData[], ConfigDataCount has been renamed to Sources[], SourcesCount.
+ - 2025/02/25 (1.91.9) - internals: font: ImFontAtlas::ConfigData[] has been renamed to ImFontAtlas::Sources[]. ImFont::ConfigData[], ConfigDataCount has been renamed to Sources[], SourcesCount.
  - 2025/02/06 (1.91.9) - renamed ImFontConfig::GlyphExtraSpacing.x to ImFontConfig::GlyphExtraAdvanceX.
  - 2025/01/22 (1.91.8) - removed ImGuiColorEditFlags_AlphaPreview (made value 0): it is now the default behavior.
                          prior to 1.91.8: alpha was made opaque in the preview by default _unless_ using ImGuiColorEditFlags_AlphaPreview. We now display the preview as transparent by default. You can use ImGuiColorEditFlags_AlphaOpaque to use old behavior.
@@ -622,7 +622,7 @@ IMPLEMENTING SUPPORT for ImGuiBackendFlags_RendererHasTextures:
                               - read https://github.com/ocornut/imgui/issues/4921
                             - if you have trouble updating a very old codebase using legacy backend-specific key codes: consider updating to 1.91.4 first, then #define IMGUI_DISABLE_OBSOLETE_KEYIO, then update to latest.
                        - obsoleted ImGuiKey_COUNT (it is unusually error-prone/misleading since valid keys don't start at 0). probably use ImGuiKey_NamedKey_BEGIN/ImGuiKey_NamedKey_END?
-                       - fonts: removed const qualifiers from most font functions in prevision for upcoming font improvements.
+                       - font: removed const qualifiers from most font functions in prevision for upcoming font improvements.
  - 2024/10/18 (1.91.4) - renamed ImGuiCol_NavHighlight to ImGuiCol_NavCursor (for consistency with newly exposed and reworked features). Kept inline redirection enum (will obsolete).
  - 2024/10/14 (1.91.4) - moved ImGuiConfigFlags_NavEnableSetMousePos to standalone io.ConfigNavMoveSetMousePos bool.
                          moved ImGuiConfigFlags_NavNoCaptureKeyboard to standalone io.ConfigNavCaptureKeyboard bool (note the inverted value!).
@@ -992,7 +992,7 @@ IMPLEMENTING SUPPORT for ImGuiBackendFlags_RendererHasTextures:
  - 2018/04/09 (1.61) - IM_DELETE() helper function added in 1.60 doesn't clear the input _pointer_ reference, more consistent with expectation and allows passing r-value.
  - 2018/03/20 (1.60) - renamed io.WantMoveMouse to io.WantSetMousePos for consistency and ease of understanding (was added in 1.52, _not_ used by core and only honored by some backend ahead of merging the Nav branch).
  - 2018/03/12 (1.60) - removed ImGuiCol_CloseButton, ImGuiCol_CloseButtonActive, ImGuiCol_CloseButtonHovered as the closing cross uses regular button colors now.
- - 2018/03/08 (1.60) - changed ImFont::DisplayOffset.y to default to 0 instead of +1. Fixed rounding of Ascent/Descent to match TrueType renderer. If you were adding or subtracting to ImFont::DisplayOffset check if your fonts are correctly aligned vertically.
+ - 2018/03/08 (1.60) - changed ImFont::DisplayOffset.y to default to 0 instead of +1. Fixed rounding of Ascent/Descent to match TrueType renderer. If you were adding or subtracting to ImFont::DisplayOffset check if your font are correctly aligned vertically.
  - 2018/03/03 (1.60) - renamed ImGuiStyleVar_Count_ to ImGuiStyleVar_COUNT and ImGuiMouseCursor_Count_ to ImGuiMouseCursor_COUNT for consistency with other public enums.
  - 2018/02/18 (1.60) - BeginDragDropSource(): temporarily removed the optional mouse_button=0 parameter because it is not really usable in many situations at the moment.
  - 2018/02/16 (1.60) - obsoleted the io.RenderDrawListsFn callback, you can call your graphics engine render function after ImGui::Render(). Use ImGui::GetDrawData() to retrieve the ImDrawData* to display.
@@ -1002,7 +1002,7 @@ IMPLEMENTING SUPPORT for ImGuiBackendFlags_RendererHasTextures:
                        - you may pass a ImFontAtlas* pointer to CreateContext() to share a font atlas between contexts. Otherwise CreateContext() will create its own font atlas instance.
                        - removed allocator parameters from CreateContext(), they are now setup with SetAllocatorFunctions(), and shared by all contexts.
                        - removed the default global context and font atlas instance, which were confusing for users of DLL reloading and users of multiple contexts.
- - 2018/01/31 (1.60) - moved sample TTF files from extra_fonts/ to misc/fonts/. If you loaded files directly from the imgui repo you may need to update your paths.
+ - 2018/01/31 (1.60) - moved sample TTF files from extra_fonts/ to misc/font/. If you loaded files directly from the imgui repo you may need to update your paths.
  - 2018/01/11 (1.60) - obsoleted IsAnyWindowHovered() in favor of IsWindowHovered(ImGuiHoveredFlags_AnyWindow). Kept redirection function (will obsolete).
  - 2018/01/11 (1.60) - obsoleted IsAnyWindowFocused() in favor of IsWindowFocused(ImGuiFocusedFlags_AnyWindow). Kept redirection function (will obsolete).
  - 2018/01/03 (1.60) - renamed ImGuiSizeConstraintCallback to ImGuiSizeCallback, ImGuiSizeConstraintCallbackData to ImGuiSizeCallbackData.
@@ -1116,11 +1116,11 @@ IMPLEMENTING SUPPORT for ImGuiBackendFlags_RendererHasTextures:
  - 2015/02/08 (1.31) - renamed GetTextLineSpacing() to GetTextLineHeightWithSpacing()
  - 2015/02/01 (1.31) - removed IO.MemReallocFn (unused)
  - 2015/01/19 (1.30) - renamed ImGuiStorage::GetIntPtr()/GetFloatPtr() to GetIntRef()/GetIntRef() because Ptr was conflicting with actual pointer storage functions.
- - 2015/01/11 (1.30) - big font/image API change! now loads TTF file. allow for multiple fonts. no need for a PNG loader.
+ - 2015/01/11 (1.30) - big font/image API change! now loads TTF file. allow for multiple font. no need for a PNG loader.
  - 2015/01/11 (1.30) - removed GetDefaultFontData(). uses io.Fonts->GetTextureData*() API to retrieve uncompressed pixels.
                        - old:  const void* png_data; unsigned int png_size; ImGui::GetDefaultFontData(NULL, NULL, &png_data, &png_size); [..Upload texture to GPU..];
                        - new:  unsigned char* pixels; int width, height; io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height); [..Upload texture to GPU..]; io.Fonts->SetTexID(YourTexIdentifier);
-                       you now have more flexibility to load multiple TTF fonts and manage the texture buffer for internal needs. It is now recommended that you sample the font texture with bilinear interpolation.
+                       you now have more flexibility to load multiple TTF font and manage the texture buffer for internal needs. It is now recommended that you sample the font texture with bilinear interpolation.
  - 2015/01/11 (1.30) - added texture identifier in ImDrawCmd passed to your render function (we can now render images). make sure to call io.Fonts->SetTexID()
  - 2015/01/11 (1.30) - removed IO.PixelCenterOffset (unnecessary, can be handled in user projection matrix)
  - 2015/01/11 (1.30) - removed ImGui::IsItemFocused() in favor of ImGui::IsItemActive() which handles all widgets
@@ -1209,7 +1209,7 @@ IMPLEMENTING SUPPORT for ImGuiBackendFlags_RendererHasTextures:
  Q: How should I handle DPI in my application?
  Q: How can I load a different font than the default?
  Q: How can I easily use icons in my application?
- Q: How can I load multiple fonts?
+ Q: How can I load multiple font?
  Q: How can I display and input non-Latin characters such as Chinese, Japanese, Korean, Cyrillic?
  >> See https://www.dearimgui.com/faq and https://github.com/ocornut/imgui/blob/master/docs/FONTS.md
 
@@ -1599,7 +1599,7 @@ ImGuiStyle::ImGuiStyle()
 }
 
 
-// Scale all spacing/padding/thickness values. Do not scale fonts.
+// Scale all spacing/padding/thickness values. Do not scale font.
 // Consider not calling this if your initial scale factor if <1.0.
 // Important: This operation is lossy because we round all sizes to integer. If you need to change your scale multiples, call this over a freshly initialized ImGuiStyle structure rather than scaling multiple times.
 void ImGuiStyle::ScaleAllSizes(float scale_factor)
@@ -4538,7 +4538,7 @@ void ImGui::Shutdown()
     IM_ASSERT_USER_ERROR(g.IO.BackendPlatformUserData == NULL, "Forgot to shutdown Platform backend?");
     IM_ASSERT_USER_ERROR(g.IO.BackendRendererUserData == NULL, "Forgot to shutdown Renderer backend?");
 
-    // The fonts atlas can be used prior to calling NewFrame(), so we clear it even if g.Initialized is FALSE (which would happen if we never called NewFrame)
+    // The font atlas can be used prior to calling NewFrame(), so we clear it even if g.Initialized is FALSE (which would happen if we never called NewFrame)
     for (ImFontAtlas* atlas : g.FontAtlases)
     {
         UnregisterFontAtlas(atlas);
@@ -5991,7 +5991,7 @@ static void InitViewportDrawData(ImGuiViewportP* viewport)
 //   some frequently called functions which to modify both channels and clipping simultaneously tend to use the
 //   more specialized SetWindowClipRectBeforeSetChannel() to avoid extraneous updates of underlying ImDrawCmds.
 // - This is analogous to PushFont()/PopFont() in the sense that are a mixing a global stack and a window stack,
-//   which in the case of ClipRect is not so problematic but tends to be more restrictive for fonts.
+//   which in the case of ClipRect is not so problematic but tends to be more restrictive for font.
 void ImGui::PushClipRect(const ImVec2& clip_rect_min, const ImVec2& clip_rect_max, bool intersect_with_current_clip_rect)
 {
     ImGuiWindow* window = GetCurrentWindow();
@@ -16647,7 +16647,7 @@ static const char* FormatTextureRefForDebugDisplay(char* buf, int buf_size, ImTe
 namespace ImGuiFreeType { IMGUI_API const ImFontLoader* GetFontLoader(); IMGUI_API bool DebugEditFontLoaderFlags(unsigned int* p_font_builder_flags); }
 #endif
 
-// [DEBUG] List fonts in a font atlas and display its texture
+// [DEBUG] List font in a font atlas and display its texture
 void ImGui::ShowFontAtlas(ImFontAtlas* atlas)
 {
     ImGuiContext& g = *GImGui;
@@ -17788,7 +17788,7 @@ void ImGui::DebugNodeFont(ImFont* font)
         TreePop();
     }
 
-    // Display all glyphs of the fonts in separate pages of 256 characters
+    // Display all glyphs of the font in separate pages of 256 characters
     for (int baked_n = 0; baked_n < atlas->Builder->BakedPool.Size; baked_n++)
     {
         ImFontBaked* baked = &atlas->Builder->BakedPool[baked_n];
@@ -18610,7 +18610,7 @@ void ImGui::DebugHookIdInfo(ImGuiID, ImGuiDataType, const void*, const void*) {}
 #endif // #ifndef IMGUI_DISABLE_DEBUG_TOOLS
 
 #if !defined(IMGUI_DISABLE_DEMO_WINDOWS) || !defined(IMGUI_DISABLE_DEBUG_TOOLS)
-// Demo helper function to select among loaded fonts.
+// Demo helper function to select among loaded font.
 // Here we use the regular BeginCombo()/EndCombo() api which is the more flexible one.
 void ImGui::ShowFontSelector(const char* label)
 {
@@ -18632,14 +18632,14 @@ void ImGui::ShowFontSelector(const char* label)
     SameLine();
     if (io.BackendFlags & ImGuiBackendFlags_RendererHasTextures)
         MetricsHelpMarker(
-            "- Load additional fonts with io.Fonts->AddFontXXX() functions.\n"
+            "- Load additional font with io.Fonts->AddFontXXX() functions.\n"
             "- Read FAQ and docs/FONTS.md for more details.");
     else
         MetricsHelpMarker(
-            "- Load additional fonts with io.Fonts->AddFontXXX() functions.\n"
+            "- Load additional font with io.Fonts->AddFontXXX() functions.\n"
             "- The font atlas is built when calling io.Fonts->GetTexDataAsXXXX() or io.Fonts->Build().\n"
             "- Read FAQ and docs/FONTS.md for more details.\n"
-            "- Legacy backend: if you need to add/remove fonts at runtime (e.g. for DPI change), do it before calling NewFrame().");
+            "- Legacy backend: if you need to add/remove font at runtime (e.g. for DPI change), do it before calling NewFrame().");
 }
 #endif // #if !defined(IMGUI_DISABLE_DEMO_WINDOWS) || !defined(IMGUI_DISABLE_DEBUG_TOOLS)
 

@@ -90,9 +90,9 @@ int main(int, char**)
     ImGui_ImplDX11_Init(g_pd3dDevice, g_pd3dDeviceContext);
 
     // Load Fonts
-    // - If fonts are not explicitly loaded, Dear ImGui will select an embedded font: either AddFontDefaultVector() or AddFontDefaultBitmap().
+    // - If font are not explicitly loaded, Dear ImGui will select an embedded font: either AddFontDefaultVector() or AddFontDefaultBitmap().
     //   This selection is based on (style.FontSizeBase * style.FontScaleMain * style.FontScaleDpi) reaching a small threshold.
-    // - You can load multiple fonts and use ImGui::PushFont()/PopFont() to select them.
+    // - You can load multiple font and use ImGui::PushFont()/PopFont() to select them.
     // - If a file cannot be loaded, AddFont functions will return a nullptr. Please handle those errors in your code (e.g. use an assertion, display an error and quit).
     // - Read 'docs/FONTS.md' for more instructions and details.
     // - Use '#define IMGUI_ENABLE_FREETYPE' in your imconfig file to use FreeType for higher quality font rendering.
@@ -101,9 +101,9 @@ int main(int, char**)
     //io.Fonts->AddFontDefaultVector();
     //io.Fonts->AddFontDefaultBitmap();
     //io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\segoeui.ttf");
-    //io.Fonts->AddFontFromFileTTF("../../misc/fonts/DroidSans.ttf");
-    //io.Fonts->AddFontFromFileTTF("../../misc/fonts/Roboto-Medium.ttf");
-    //io.Fonts->AddFontFromFileTTF("../../misc/fonts/Cousine-Regular.ttf");
+    //io.Fonts->AddFontFromFileTTF("../../misc/font/DroidSans.ttf");
+    //io.Fonts->AddFontFromFileTTF("../../misc/font/Roboto-Medium.ttf");
+    //io.Fonts->AddFontFromFileTTF("../../misc/font/Cousine-Regular.ttf");
     //ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf");
     //IM_ASSERT(font != nullptr);
 

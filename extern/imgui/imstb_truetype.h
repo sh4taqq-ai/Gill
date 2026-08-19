@@ -75,8 +75,8 @@
 //   1.17 (2017-07-23) make more arguments const; doc fix
 //   1.16 (2017-07-12) SDF support
 //   1.15 (2017-03-03) make more arguments const
-//   1.14 (2017-01-16) num-fonts-in-TTC function
-//   1.13 (2017-01-02) support OpenType fonts, certain Apple fonts
+//   1.14 (2017-01-16) num-font-in-TTC function
+//   1.13 (2017-01-02) support OpenType font, certain Apple font
 //   1.12 (2016-10-25) suppress warnings about casting away const with -Wcast-qual
 //   1.11 (2016-04-02) fix unused-variable warning
 //   1.10 (2016-04-02) user-defined fabs(); rare memory leak; remove duplicate typedef
@@ -112,7 +112,7 @@
 //   Improved 3D API (more shippable):
 //           #include "stb_rect_pack.h"           -- optional, but you really want it
 //           stbtt_PackBegin()
-//           stbtt_PackSetOversampling()          -- for improved quality on small fonts
+//           stbtt_PackSetOversampling()          -- for improved quality on small font
 //           stbtt_PackFontRanges()               -- pack and renders
 //           stbtt_PackEnd()
 //           stbtt_GetPackedQuad()
@@ -120,7 +120,7 @@
 //   "Load" a font file from a memory buffer (you have to keep the buffer loaded)
 //           stbtt_InitFont()
 //           stbtt_GetFontOffsetForIndex()        -- indexing for TTC font collections
-//           stbtt_GetNumberOfFonts()             -- number of fonts for TTC font collections
+//           stbtt_GetNumberOfFonts()             -- number of font for TTC font collections
 //
 //   Render a unicode codepoint to a bitmap
 //           stbtt_GetCodepointBitmap()           -- allocates and returns a bitmap
@@ -171,7 +171,7 @@
 //      Current Point
 //         As you draw text to the screen, you keep track of a "current point"
 //         which is the origin of each character. The current point's vertical
-//         position is the baseline. Even "baked fonts" use this model.
+//         position is the baseline. Even "baked font" use this model.
 //
 //      Vertical Font Metrics
 //         The vertical qualities of the font, used to vertically position
@@ -193,7 +193,7 @@
 //         be 1.333 pixels. Additionally, the TrueType font data provides
 //         an explicit scale factor to scale a given font's glyphs to points,
 //         but the author has observed that this scale factor is often wrong
-//         for non-commercial fonts, thus making fonts scaled in points
+//         for non-commercial font, thus making font scaled in points
 //         according to the TrueType spec incoherently sized in practice.
 //
 // DETAILED USAGE:
@@ -236,7 +236,7 @@
 //    - Use the functions with Subpixel at the end to allow your characters
 //      to have subpixel positioning. Since the font is anti-aliased, not
 //      hinted, this is very import for quality. (This is not possible with
-//      baked fonts.)
+//      baked font.)
 //
 //    - Kerning is now supported, and if you're supporting subpixel rendering
 //      then kerning is worth using to give your text a polished look.
@@ -291,7 +291,7 @@ GLuint ftex;
 
 void my_stbtt_initfont(void)
 {
-   fread(ttf_buffer, 1, 1<<20, fopen("c:/windows/fonts/times.ttf", "rb"));
+   fread(ttf_buffer, 1, 1<<20, fopen("c:/windows/font/times.ttf", "rb"));
    stbtt_BakeFontBitmap(ttf_buffer,0, 32.0, temp_bitmap,512,512, 32,96, cdata); // no guarantee this fits!
    // can free ttf_buffer at this point
    glGenTextures(1, &ftex);
@@ -342,7 +342,7 @@ int main(int argc, char **argv)
    unsigned char *bitmap;
    int w,h,i,j,c = (argc > 1 ? atoi(argv[1]) : 'a'), s = (argc > 2 ? atoi(argv[2]) : 20);
 
-   fread(ttf_buffer, 1, 1<<25, fopen(argc > 3 ? argv[3] : "c:/windows/fonts/arialbd.ttf", "rb"));
+   fread(ttf_buffer, 1, 1<<25, fopen(argc > 3 ? argv[3] : "c:/windows/font/arialbd.ttf", "rb"));
 
    stbtt_InitFont(&font, ttf_buffer, stbtt_GetFontOffsetForIndex(ttf_buffer,0));
    bitmap = stbtt_GetCodepointBitmap(&font, 0,stbtt_ScaleForPixelHeight(&font, s), c, &w, &h, 0,0);
@@ -384,7 +384,7 @@ int main(int arg, char **argv)
    float scale, xpos=2; // leave a little padding in case the character extends left
    char *text = "Heljo World!"; // intentionally misspelled to show 'lj' brokenness
 
-   fread(buffer, 1, 1000000, fopen("c:/windows/fonts/arialbd.ttf", "rb"));
+   fread(buffer, 1, 1000000, fopen("c:/windows/font/arialbd.ttf", "rb"));
    stbtt_InitFont(&font, buffer, 0);
 
    scale = stbtt_ScaleForPixelHeight(&font, 15);
@@ -574,7 +574,7 @@ STBTT_DEF void stbtt_GetScaledFontVMetrics(const unsigned char *fontdata, int in
 //
 // NEW TEXTURE BAKING API
 //
-// This provides options for packing multiple fonts into one atlas, not
+// This provides options for packing multiple font into one atlas, not
 // perfectly but better than nothing.
 
 typedef struct
@@ -648,7 +648,7 @@ STBTT_DEF void stbtt_PackSetOversampling(stbtt_pack_context *spc, unsigned int h
 // h_oversample*v_oversample larger than the default; for example, 2x2
 // oversampling requires 4x the storage of 1x1. For best results, render
 // oversampled textures with bilinear filtering. Look at the readme in
-// stb/tests/oversample for information about oversampled fonts
+// stb/tests/oversample for information about oversampled font
 //
 // To use with PackFontRangesGather etc., you must set it before calls
 // call to PackFontRangesGatherRects.
@@ -670,7 +670,7 @@ STBTT_DEF void stbtt_PackFontRangesPackRects(stbtt_pack_context *spc, stbrp_rect
 STBTT_DEF int  stbtt_PackFontRangesRenderIntoRects(stbtt_pack_context *spc, const stbtt_fontinfo *info, stbtt_pack_range *ranges, int num_ranges, stbrp_rect *rects);
 // Calling these functions in sequence is roughly equivalent to calling
 // stbtt_PackFontRanges(). If you more control over the packing of multiple
-// fonts, or if you want to pack custom data into a font texture, take a look
+// font, or if you want to pack custom data into a font texture, take a look
 // at the source to of stbtt_PackFontRanges() and create a custom version
 // using these functions, e.g. call GatherRects multiple times,
 // building up a single array of rects, then call PackRects once,
@@ -700,11 +700,11 @@ struct stbtt_pack_context {
 //
 
 STBTT_DEF int stbtt_GetNumberOfFonts(const unsigned char *data);
-// This function will determine the number of fonts in a font file.  TrueType
-// collection (.ttc) files may contain multiple fonts, while TrueType font
-// (.ttf) files only contain one font. The number of fonts can be used for
+// This function will determine the number of font in a font file.  TrueType
+// collection (.ttc) files may contain multiple font, while TrueType font
+// (.ttf) files only contain one font. The number of font can be used for
 // indexing with the previous function where the index is between zero and one
-// less than the total fonts. If an error occurs, -1 is returned.
+// less than the total font. If an error occurs, -1 is returned.
 
 STBTT_DEF int stbtt_GetFontOffsetForIndex(const unsigned char *data, int index);
 // Each .ttf/.ttc file may have more than one font. Each font has a sequential
@@ -954,7 +954,7 @@ STBTT_DEF unsigned char * stbtt_GetGlyphSDF(const stbtt_fontinfo *info, float sc
 STBTT_DEF unsigned char * stbtt_GetCodepointSDF(const stbtt_fontinfo *info, float scale, int codepoint, int padding, unsigned char onedge_value, float pixel_dist_scale, int *width, int *height, int *xoff, int *yoff);
 // These functions compute a discretized SDF field for a single character, suitable for storing
 // in a single-channel texture, sampling with bilinear filtering, and testing against
-// larger than some threshold to produce scalable fonts.
+// larger than some threshold to produce scalable font.
 //        info              --  the font
 //        scale             --  controls the size of the resulting SDF bitmap, same as it would be creating a regular bitmap
 //        glyph/codepoint   --  the character to generate the SDF for
@@ -1027,7 +1027,7 @@ STBTT_DEF int stbtt_FindMatchingFont(const unsigned char *fontdata, const char *
 // returns the offset (not index) of the font that matches, or -1 if none
 //   if you use STBTT_MACSTYLE_DONTCARE, use a font name like "Arial Bold".
 //   if you use any other flag, use a font name like "Arial"; this checks
-//     the 'macStyle' header field; i don't know if fonts set this consistently
+//     the 'macStyle' header field; i don't know if font set this consistently
 #define STBTT_MACSTYLE_DONTCARE     0
 #define STBTT_MACSTYLE_BOLD         1
 #define STBTT_MACSTYLE_ITALIC       2
@@ -1282,7 +1282,7 @@ static stbtt__buf stbtt__cff_index_get(stbtt__buf b, int i)
 //
 
 // on platforms that don't allow misaligned reads, if we want to allow
-// truetype fonts that aren't padded to alignment, define ALLOW_UNALIGNED_TRUETYPE
+// truetype font that aren't padded to alignment, define ALLOW_UNALIGNED_TRUETYPE
 
 #define ttBYTE(p)     (* (stbtt_uint8 *) (p))
 #define ttCHAR(p)     (* (stbtt_int8 *) (p))
@@ -1303,7 +1303,7 @@ static int stbtt__isfont(stbtt_uint8 *font)
    if (stbtt_tag(font, "typ1"))   return 1; // TrueType with type 1 font -- we don't support this!
    if (stbtt_tag(font, "OTTO"))   return 1; // OpenType with CFF
    if (stbtt_tag4(font, 0,1,0,0)) return 1; // OpenType 1.0
-   if (stbtt_tag(font, "true"))   return 1; // Apple specification for TrueType fonts
+   if (stbtt_tag(font, "true"))   return 1; // Apple specification for TrueType font
    return 0;
 }
 
@@ -1409,7 +1409,7 @@ static int stbtt_InitFont_internal(stbtt_fontinfo *info, unsigned char *data, in
       // required for truetype
       if (!info->loca) return 0;
    } else {
-      // initialization for CFF / Type2 fonts (OTF)
+      // initialization for CFF / Type2 font (OTF)
       stbtt__buf b, topdict, topdictidx;
       stbtt_uint32 cstype = 2, charstrings = 0, fdarrayoff = 0, fdselectoff = 0;
       stbtt_uint32 cff;
@@ -1428,7 +1428,7 @@ static int stbtt_InitFont_internal(stbtt_fontinfo *info, unsigned char *data, in
       stbtt__buf_skip(&b, 2);
       stbtt__buf_seek(&b, stbtt__buf_get8(&b)); // hdrsize
 
-      // @TODO the name INDEX could list multiple fonts,
+      // @TODO the name INDEX could list multiple font,
       // but we just use the first one.
       stbtt__cff_get_index(&b);  // name INDEX
       topdictidx = stbtt__cff_get_index(&b);
@@ -1518,7 +1518,7 @@ STBTT_DEF int stbtt_FindGlyphIndex(const stbtt_fontinfo *info, int unicode_codep
    } else if (format == 2) {
       STBTT_assert(0); // @TODO: high-byte mapping for japanese/chinese/korean
       return 0;
-   } else if (format == 4) { // standard mapping for windows fonts: binary search collection of ranges
+   } else if (format == 4) { // standard mapping for windows font: binary search collection of ranges
       stbtt_uint16 segcount = ttUSHORT(data+index_map+6) >> 1;
       stbtt_uint16 searchRange = ttUSHORT(data+index_map+8) >> 1;
       stbtt_uint16 entrySelector = ttUSHORT(data+index_map+10);
@@ -4992,8 +4992,8 @@ STBTT_DEF int stbtt_CompareUTF8toUTF16_bigendian(const char *s1, int len1, const
 //   1.17 (2017-07-23) make more arguments const; doc fix
 //   1.16 (2017-07-12) SDF support
 //   1.15 (2017-03-03) make more arguments const
-//   1.14 (2017-01-16) num-fonts-in-TTC function
-//   1.13 (2017-01-02) support OpenType fonts, certain Apple fonts
+//   1.14 (2017-01-16) num-font-in-TTC function
+//   1.13 (2017-01-02) support OpenType font, certain Apple font
 //   1.12 (2016-10-25) suppress warnings about casting away const with -Wcast-qual
 //   1.11 (2016-04-02) fix unused-variable warning
 //   1.10 (2016-04-02) allow user-defined fabs() replacement
@@ -5017,7 +5017,7 @@ STBTT_DEF int stbtt_CompareUTF8toUTF16_bigendian(const char *s1, int len1, const
 //                        non-oversampled; STBTT_POINT_SIZE for packed case only
 //   1.00 (2014-12-06) add new PackBegin etc. API, w/ support for oversampling
 //   0.99 (2014-09-18) fix multiple bugs with subpixel rendering (ryg)
-//   0.9  (2014-08-07) support certain mac/iOS fonts without an MS platformID
+//   0.9  (2014-08-07) support certain mac/iOS font without an MS platformID
 //   0.8b (2014-07-07) fix a warning
 //   0.8  (2014-05-25) fix a few more warnings
 //   0.7  (2013-09-25) bugfix: subpixel glyph bug fixed in 0.5 had come back

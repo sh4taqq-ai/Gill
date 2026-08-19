@@ -31,7 +31,7 @@ private:
 
     unsigned int wdth,hght;
 
-    mathpp::mat4f view;
+
     mathpp::mat4f projection;
     Selector selector;
     Renderer renderer;

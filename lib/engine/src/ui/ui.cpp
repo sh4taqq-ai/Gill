@@ -15,21 +15,33 @@ void UIManager::Init(Window* window) {
 }
 
 void UIManager::RenderProperties(Scene* scene) {
-    ImGui::SetNextWindowSize(ImVec2(500, 400), ImGuiCond_Once);
+    ImGui::SetNextWindowSize(ImVec2(800, 600), ImGuiCond_Once);
+    ImGui::SetNextWindowPos(
+    ImVec2(-100,100 ),
+    ImGuiCond_Always
+);
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
-    ImGui::Begin("Properties");
+    ImGui::Begin("Properties",nullptr,ImGuiWindowFlags_NoMove);
     if (scene->GetSelected().has_value()) {
-        ImGui::Text("%", scene->GetSelected());
+        ImGui::Text("Entity: %u", scene->GetSelected());
         ImGui::NewLine();
-        const auto& transform = scene->GetComponent<TransformComponent>(scene->GetSelected().value());
-        ImGui::Text("Position: %.1f|%.1f|%.1f",transform->position.x,transform->position.y,transform->position.z);
-        ImGui::NewLine();
-        ImGui::Text("Rotation: %.1f|%.1f|.1f",transform->rotation.x,transform->rotation.y,transform->rotation.z);
-        ImGui::NewLine();
-        ImGui::Text("Scale: %.1f|%.1f|.1f",transform->scale.x,transform->scale.y,transform->scale.z);
+         TransformComponent* transform = scene->GetComponent<TransformComponent>(scene->GetSelected().value());
+        ImGui::InputFloat3(
+       "Position",
+       const_cast<float *>(&transform->position.x)
+   );
 
+        ImGui::InputFloat3(
+            "Rotation",
+            const_cast<float *>(&transform->rotation.x)
+        );
+
+        ImGui::InputFloat3(
+            "Scale",
+            const_cast<float *>(&transform->scale.x)
+        );
     }
     ImGui::End();
     ImGui::Render();

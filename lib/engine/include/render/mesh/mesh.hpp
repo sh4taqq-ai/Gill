@@ -9,6 +9,7 @@ public:
     void Draw();
     ~Mesh();
     private:
+    bool editable;
     unsigned int VAO, VBO, EBO;
     unsigned int indexCount;
 };

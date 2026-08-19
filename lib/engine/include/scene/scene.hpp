@@ -27,6 +27,20 @@ public:
         return nullptr;
     }//the function have to be a const to be able to call the function on a const object
 
+    template<typename T>
+T* GetComponent(Entity entity) {
+        if constexpr (std::is_same_v<T, TransformComponent>) {
+            auto it = transforms.find(entity);
+            return it != transforms.end() ? &it->second : nullptr;
+        }
+        else if constexpr (std::is_same_v<T, MeshComponent>) {
+            auto it = meshes.find(entity);
+            return it != meshes.end() ? &it->second : nullptr;
+        }
+
+        return nullptr;
+    }
+
     const std::unordered_map<Entity, MeshComponent>& GetAllMeshes() const;
     const std::unordered_map<Entity, TransformComponent>& GetAllTransforms() const;
 

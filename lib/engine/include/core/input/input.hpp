@@ -6,6 +6,7 @@ class Input {
 public:
     void Update(Window* window);
     bool IsKeyDown( int Key) const;
+    bool IsMouseButtonDown( int Button) const;
     void GetScroll(mathpp::vec2f& scroll);
     mathpp::vec2f GetMouseDelta() const;
 private:

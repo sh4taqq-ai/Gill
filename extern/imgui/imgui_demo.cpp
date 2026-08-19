@@ -273,7 +273,7 @@ static void             ExampleTree_DestroyNode(ExampleTreeNode* node);
 //-----------------------------------------------------------------------------
 
 // Helper to display a little (?) mark which shows a tooltip when hovered.
-// In your own code you may want to display an actual icon if you are using a merged icon fonts (see docs/FONTS.md)
+// In your own code you may want to display an actual icon if you are using a merged icon font (see docs/FONTS.md)
 static void HelpMarker(const char* desc)
 {
     ImGui::TextDisabled("(?)");
@@ -8474,7 +8474,7 @@ void ImGui::ShowAboutWindow(bool* p_open)
         if (io.BackendFlags & ImGuiBackendFlags_RendererHasVtxOffset)   ImGui::Text(" RendererHasVtxOffset");
         if (io.BackendFlags & ImGuiBackendFlags_RendererHasTextures)    ImGui::Text(" RendererHasTextures");
         ImGui::Separator();
-        ImGui::Text("io.Fonts: %d fonts, Flags: 0x%08X, TexSize: %d,%d", io.Fonts->Fonts.Size, io.Fonts->Flags, io.Fonts->TexData->Width, io.Fonts->TexData->Height);
+        ImGui::Text("io.Fonts: %d font, Flags: 0x%08X, TexSize: %d,%d", io.Fonts->Fonts.Size, io.Fonts->Flags, io.Fonts->TexData->Width, io.Fonts->TexData->Height);
         ImGui::Text("io.Fonts->FontLoaderName: %s", io.Fonts->FontLoaderName ? io.Fonts->FontLoaderName : "NULL");
         ImGui::Text("io.DisplaySize: %.2f,%.2f", io.DisplaySize.x, io.DisplaySize.y);
         ImGui::Text("io.DisplayFramebufferScale: %.2f,%.2f", io.DisplayFramebufferScale.x, io.DisplayFramebufferScale.y);
@@ -8774,7 +8774,7 @@ void ImGui::ShowStyleEditor(ImGuiStyle* ref)
                 {
                     // Tips: in a real user application, you may want to merge and use an icon font into the main font,
                     // so instead of "Save"/"Revert" you'd use icons!
-                    // Read the FAQ and docs/FONTS.md about using icon fonts. It's really easy and super convenient!
+                    // Read the FAQ and docs/FONTS.md about using icon font. It's really easy and super convenient!
                     SameLine(0.0f, style.ItemInnerSpacing.x); if (Button("Save")) { ref->Colors[i] = style.Colors[i]; }
                     SameLine(0.0f, style.ItemInnerSpacing.x); if (Button("Revert")) { style.Colors[i] = ref->Colors[i]; }
                 }
@@ -8794,7 +8794,7 @@ void ImGui::ShowStyleEditor(ImGuiStyle* ref)
             ImFontAtlas* atlas = io.Fonts;
             ShowFontAtlas(atlas);
 
-            // Post-baking font scaling. Note that this is NOT the nice way of scaling fonts, read below.
+            // Post-baking font scaling. Note that this is NOT the nice way of scaling font, read below.
             // (we enforce hard clamping manually as by default DragFloat/SliderFloat allows Ctrl+Click text to get out of bounds).
             /*
             SeparatorText("Legacy Scaling");

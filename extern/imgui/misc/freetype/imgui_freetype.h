@@ -10,7 +10,7 @@
 //   for imgui_freetype in imgui. It is equivalent to selecting the default loader with:
 //      io.Fonts->SetFontLoader(ImGuiFreeType::GetFontLoader())
 
-// Optional support for OpenType SVG fonts:
+// Optional support for OpenType SVG font:
 // - Add '#define IMGUI_ENABLE_FREETYPE_PLUTOSVG' to use plutosvg (not provided). See #7927.
 // - Add '#define IMGUI_ENABLE_FREETYPE_LUNASVG' to use lunasvg (not provided). See #6591.
 

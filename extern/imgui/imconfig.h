@@ -50,7 +50,7 @@
 //#define IMGUI_DISABLE_FILE_FUNCTIONS                      // Don't implement ImFileOpen/ImFileClose/ImFileRead/ImFileWrite and ImFileHandle at all (replace them with dummies)
 //#define IMGUI_DISABLE_DEFAULT_FILE_FUNCTIONS              // Don't implement ImFileOpen/ImFileClose/ImFileRead/ImFileWrite and ImFileHandle so you can implement them yourself if you don't want to link with fopen/fclose/fread/fwrite. This will also disable the LogToTTY() function.
 //#define IMGUI_DISABLE_DEFAULT_ALLOCATORS                  // Don't implement default allocators calling malloc()/free() to avoid linking with them. You will need to call ImGui::SetAllocatorFunctions().
-//#define IMGUI_DISABLE_DEFAULT_FONT                        // Disable default embedded fonts (ProggyClean + ProggyForever). Remove ~9 KB + ~14 KB from output binary. AddFontDefaultXXX() functions will assert.
+//#define IMGUI_DISABLE_DEFAULT_FONT                        // Disable default embedded font (ProggyClean + ProggyForever). Remove ~9 KB + ~14 KB from output binary. AddFontDefaultXXX() functions will assert.
 //#define IMGUI_DISABLE_DEFAULT_FONT_BITMAP                 // Disable default embedded bitmap font (ProggyClean). Remove ~9 KB from output binary. AddFontDefaultBitmap() will assert.
 //#define IMGUI_DISABLE_DEFAULT_FONT_VECTOR                 // Disable default embedded vector font (ProggyForever), Remove ~14 KB from output binary. AddFontDefaultVector() will assert.
 //#define IMGUI_DISABLE_SSE                                 // Disable use of SSE intrinsics even if available
@@ -91,9 +91,9 @@
 // On Windows you may use vcpkg with 'vcpkg install freetype --triplet=x64-windows' + 'vcpkg integrate install'.
 //#define IMGUI_ENABLE_FREETYPE
 
-//---- Use FreeType + plutosvg or lunasvg to render OpenType SVG fonts (SVGinOT)
+//---- Use FreeType + plutosvg or lunasvg to render OpenType SVG font (SVGinOT)
 // Only works in combination with IMGUI_ENABLE_FREETYPE.
-// - plutosvg is currently easier to install, as e.g. it is part of vcpkg. It will support more fonts and may load them faster. See misc/freetype/README for instructions.
+// - plutosvg is currently easier to install, as e.g. it is part of vcpkg. It will support more font and may load them faster. See misc/freetype/README for instructions.
 // - Both require headers to be available in the include path + program to be linked with the library code (not provided).
 // - (note: lunasvg implementation is based on Freetype's rsvg-port.c which is licensed under CeCILL-C Free Software License Agreement)
 //#define IMGUI_ENABLE_FREETYPE_PLUTOSVG

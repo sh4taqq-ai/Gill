@@ -26,15 +26,11 @@ mathpp::mat4f OrbitCamera::GetViewMatrix() const {
 
 void FreeCamera::Update(Input *input,float deltaTime) {
     mathpp::vec2f delta = input->GetMouseDelta();
-    yaw += delta.x * sens;
-    pitch -= delta.y * sens;
-
-
-
-    if (pitch >89.9f)
-    {pitch = 89.9f;}
-    if (pitch < -89.9f)
-    {pitch = -89.9f;}
+    if (input->IsMouseButtonDown(GLFW_MOUSE_BUTTON_MIDDLE)) {
+        yaw += delta.x * sens;
+        pitch -= delta.y * sens;
+        pitch = mathpp::clamp(pitch,-89.9f,89.9f);
+    }
 
 
     mathpp::vec3f front;
@@ -43,19 +39,18 @@ void FreeCamera::Update(Input *input,float deltaTime) {
     front.z = sin(mathpp::to_radians(yaw)) * cos(mathpp::to_radians(pitch));
     mathpp::vec3f cameraFront = mathpp::normalize(front);
     std::cout<<"front.x: "<<cameraFront.x<<"front.y: "<<cameraFront.y<<"front.z: "<<cameraFront.z<<std::endl;
-
-    if (input->IsKeyDown(GLFW_KEY_W)) {
-        std::cout<<"Input Read W"<<std::endl;
-        position +=  cameraFront * speed * deltaTime;
+    if (input->IsMouseButtonDown(GLFW_MOUSE_BUTTON_MIDDLE)) {
+        if (input->IsKeyDown(GLFW_KEY_W)) {
+            position +=  cameraFront * speed * deltaTime;
+        }
+        if (input->IsKeyDown(GLFW_KEY_S)) {
+            position -=  cameraFront * speed * deltaTime;
+        }
+        if (input->IsKeyDown(GLFW_KEY_A))
+        {position -=  mathpp::normalize(mathpp::cross(cameraFront,{0.0f,1.0f,0.0f})) * speed * deltaTime;}
+        if (input->IsKeyDown(GLFW_KEY_D))
+        {position +=  mathpp::normalize(mathpp::cross(cameraFront,{0.0f,1.0f,0.0f})) * speed * deltaTime;}
     }
-    if (input->IsKeyDown(GLFW_KEY_S)) {
-        std::cout<<"Input Read S"<<std::endl;
-        position -=  cameraFront * speed * deltaTime;
-    }
-    if (input->IsKeyDown(GLFW_KEY_A))
-    {position -=  mathpp::normalize(mathpp::cross(cameraFront,{0.0f,1.0f,0.0f})) * speed * deltaTime;}
-    if (input->IsKeyDown(GLFW_KEY_D))
-    {position +=  mathpp::normalize(mathpp::cross(cameraFront,{0.0f,1.0f,0.0f})) * speed * deltaTime;}
     viewMatrix = mathpp::look_at(position,cameraFront+position,{0.0f,1.0f,0.0f});
     std::cout << position.x << " " << position.y << " " << position.z << std::endl;
 }

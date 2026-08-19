@@ -14,10 +14,10 @@ void Engine::Init(unsigned int width, unsigned int height, const std::string& ti
     renderer.Init();
     aspect = static_cast<float>(width) / static_cast<float>(height);
 
-    view = mathpp::look_at(mathpp::vec3f{3.0f,3.0f,-3.0f},{0.0f,0.0f,0.0f},{0.0f,1.0f,0.0f});
-    projection = mathpp::perspective(45.0f,aspect,0.01f,100.0f);
+
+    projection = mathpp::perspective(45.0f,aspect,0.01f,300.0f);
    Entity entity = scene.CreateEntity();
-    mesh = CreateCube();
+    mesh = CreateSphere(15,15,2.0f);
 
 
     shader = std::make_unique<Shader>("asset/shader/simpleShader/simpleVert.glsl","asset/shader/simpleShader/simpleFrag.glsl");
@@ -43,21 +43,23 @@ void Engine::Run() {
         deltaTime = currentTime - lastTime;
         lastTime = currentTime;
         selector.RenderScene(&scene,freecam.GetViewMatrix(),projection);
-        uiManager.RenderProperties(&scene);
         input.Update(window.get());
 
 
-
-
-        if (window->GetLeftMouseButton() && !ImGui::GetIO().WantCaptureMouse) {
-            if (currentTime - lastClickTime >= delay) {
-                window->GetCursorPos(xPos,yPos);
-                scene.SetSelected( selector.ReadEntityAt(static_cast<int>(xPos),static_cast<int>(yPos)));
-                lastClickTime = currentTime;
+        if (!ImGui::GetIO().WantCaptureMouse) {
+            freecam.Update(&input,deltaTime);
+            if (window->GetLeftMouseButton() ) {
+                if (currentTime - lastClickTime >= delay) {
+                    window->GetCursorPos(xPos,yPos);
+                    scene.SetSelected( selector.ReadEntityAt(static_cast<int>(xPos),static_cast<int>(yPos)));
+                    lastClickTime = currentTime;
+                }
             }
         }
-        freecam.Update(&input,deltaTime);
+
+
         renderer.renderScene(&scene,freecam.GetViewMatrix(),projection);
+        uiManager.RenderProperties(&scene);
         window->SwapBuffers();
     }
 }

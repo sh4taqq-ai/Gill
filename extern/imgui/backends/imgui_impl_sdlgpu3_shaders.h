@@ -3,7 +3,7 @@
 #include <stdint.h>
 
 // Data exported using
-//   misc/fonts/binary_to_compressed_c.exe -u8 -nocompress filename symbolname >filename.h
+//   misc/font/binary_to_compressed_c.exe -u8 -nocompress filename symbolname >filename.h
 // With some manual pasting.
 
 // Check sdlgpu3/ folder for the shaders' source code and instruction on how to build them

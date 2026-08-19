@@ -176,11 +176,11 @@ struct ImDrawListSharedData;        // Data shared among multiple draw lists (ty
 struct ImDrawListSplitter;          // Helper to split a draw list into different layers which can be drawn into out of order, then flattened back.
 struct ImDrawVert;                  // A single vertex (pos + uv + col = 20 bytes by default. Override layout with IMGUI_OVERRIDE_DRAWVERT_STRUCT_LAYOUT)
 struct ImFont;                      // Runtime data for a single font within a parent ImFontAtlas
-struct ImFontAtlas;                 // Runtime data for multiple fonts, bake multiple fonts into a single texture, TTF/OTF font loader
+struct ImFontAtlas;                 // Runtime data for multiple font, bake multiple font into a single texture, TTF/OTF font loader
 struct ImFontAtlasBuilder;          // Opaque storage for building a ImFontAtlas
 struct ImFontAtlasRect;             // Output of ImFontAtlas::GetCustomRect() when using custom rectangles.
 struct ImFontBaked;                 // Baked data for a ImFont at a given size.
-struct ImFontConfig;                // Configuration data when adding a font or merging fonts
+struct ImFontConfig;                // Configuration data when adding a font or merging font
 struct ImFontGlyph;                 // A single font glyph (code point + coordinates within in ImFontAtlas + offset)
 struct ImFontGlyphRangesBuilder;    // Helper to build glyph ranges from text/string data
 struct ImFontLoader;                // Opaque interface to a font loading backend (stb_truetype, FreeType etc.).
@@ -413,7 +413,7 @@ namespace ImGui
     IMGUI_API void          ShowAboutWindow(bool* p_open = NULL);       // create About window. display Dear ImGui version, credits and build/system information.
     IMGUI_API void          ShowStyleEditor(ImGuiStyle* ref = NULL);    // add style editor block (not a window). you can pass in a reference ImGuiStyle structure to compare to, revert to and save to (else it uses the default style)
     IMGUI_API bool          ShowStyleSelector(const char* label);       // add style selector block (not a window), essentially a combo listing the default styles.
-    IMGUI_API void          ShowFontSelector(const char* label);        // add font selector block (not a window), essentially a combo listing the loaded fonts.
+    IMGUI_API void          ShowFontSelector(const char* label);        // add font selector block (not a window), essentially a combo listing the loaded font.
     IMGUI_API void          ShowUserGuide();                            // add basic help/info block (not a window): how to manipulate ImGui as an end-user (mouse/keyboard controls).
     IMGUI_API const char*   GetVersion();                               // get the compiled version string e.g. "1.80 WIP" (essentially the value for IMGUI_VERSION from the compiled version of imgui.cpp)
 
@@ -510,7 +510,7 @@ namespace ImGui
     //  - PushFont(font, 20.0f)                      // Change font and set size to 20.0f
     //  - PushFont(font, style.FontSizeBase * 2.0f)  // Change font and set size to be twice bigger than current size.
     //  - PushFont(font, font->LegacySize)           // Change font and set size to size passed to AddFontXXX() function. Same as pre-1.92 behavior.
-    // *IMPORTANT* before 1.92, fonts had a single size. They can now be dynamically be adjusted.
+    // *IMPORTANT* before 1.92, font had a single size. They can now be dynamically be adjusted.
     //  - In 1.92 we have REMOVED the single parameter version of PushFont() because it seems like the easiest way to provide an error-proof transition.
     //  - PushFont(font) before 1.92 = PushFont(font, font->LegacySize) after 1.92          // Use default font size as passed to AddFontXXX() function.
     // *IMPORTANT* global scale factors are applied over the provided size.
@@ -2398,7 +2398,7 @@ struct ImGuiStyle
 
     // Functions
     IMGUI_API   ImGuiStyle();
-    IMGUI_API   void ScaleAllSizes(float scale_factor); // Scale all spacing/padding/thickness values. Do not scale fonts. See comments in definition. Consider not calling this if your initial scale factor if <1.0.
+    IMGUI_API   void ScaleAllSizes(float scale_factor); // Scale all spacing/padding/thickness values. Do not scale font. See comments in definition. Consider not calling this if your initial scale factor if <1.0.
 
     // Obsolete names
 #ifndef IMGUI_DISABLE_OBSOLETE_FUNCTIONS
@@ -2446,7 +2446,7 @@ struct ImGuiIO
     void*       UserData;                       // = NULL           // Store your own data.
 
     // Font system
-    ImFontAtlas*Fonts;                          // <auto>           // Font atlas: load, rasterize and pack one or more fonts into a single texture.
+    ImFontAtlas*Fonts;                          // <auto>           // Font atlas: load, rasterize and pack one or more font into a single texture.
     ImFont*     FontDefault;                    // = NULL           // Font to use on NewFrame(). Use NULL to uses Fonts->Fonts[0].
     bool        FontAllowUserScaling;           // = false          // Allow user scaling text of individual window with Ctrl+Wheel.
 
@@ -3625,10 +3625,10 @@ struct ImFontConfig
     bool            PixelSnapH;             // false    // Align every glyph AdvanceX to pixel boundaries. Prevents fractional font size from working correctly! Useful e.g. if you are merging a non-pixel aligned font with the default font. If enabled, OversampleH/V will default to 1.
     ImS8            OversampleH;            // 0 (2)    // Rasterize at higher quality for sub-pixel positioning. 0 == auto == 1 or 2 depending on size. Note the difference between 2 and 3 is minimal. You can reduce this to 1 for large glyphs save memory. Read https://github.com/nothings/stb/blob/master/tests/oversample/README.md for details.
     ImS8            OversampleV;            // 0 (1)    // Rasterize at higher quality for sub-pixel positioning. 0 == auto == 1. This is not really useful as we don't use sub-pixel positions on the Y axis.
-    ImWchar         EllipsisChar;           // 0        // Explicitly specify Unicode codepoint of ellipsis character. When fonts are being merged first specified ellipsis will be used.
+    ImWchar         EllipsisChar;           // 0        // Explicitly specify Unicode codepoint of ellipsis character. When font are being merged first specified ellipsis will be used.
     float           SizePixels;             //          // Output size in pixels for rasterizer (more or less maps to the resulting font height).
     const ImWchar*  GlyphRanges;            // NULL     // *LEGACY* THE ARRAY DATA NEEDS TO PERSIST AS LONG AS THE FONT IS ALIVE. Pointer to a user-provided list of Unicode range (2 value per range, values are inclusive, zero-terminated list).
-    const ImWchar*  GlyphExcludeRanges;     // NULL     // Pointer to a small user-provided list of Unicode ranges (2 value per range, values are inclusive, zero-terminated list). This is very close to GlyphRanges[] but designed to exclude ranges from a font source, when merging fonts with overlapping glyphs. Use "Input Glyphs Overlap Detection Tool" to find about your overlapping ranges.
+    const ImWchar*  GlyphExcludeRanges;     // NULL     // Pointer to a small user-provided list of Unicode ranges (2 value per range, values are inclusive, zero-terminated list). This is very close to GlyphRanges[] but designed to exclude ranges from a font source, when merging font with overlapping glyphs. Use "Input Glyphs Overlap Detection Tool" to find about your overlapping ranges.
     //ImVec2        GlyphExtraSpacing;      // 0, 0     // (REMOVED AT IT SEEMS LARGELY OBSOLETE. PLEASE REPORT IF YOU WERE USING THIS). Extra spacing (in pixels) between glyphs when rendered: essentially add to glyph->AdvanceX. Only X axis is supported for now.
     ImVec2          GlyphOffset;            // 0, 0     // Offset (in pixels) all glyphs from this font input. Absolute value for default size, other sizes will scale this value.
     float           GlyphMinAdvanceX;       // 0        // Minimum AdvanceX for glyphs, set Min to align font icons, set both Min/Max to enforce mono-space font. Absolute value for default size, other sizes will scale this value.
@@ -3637,13 +3637,13 @@ struct ImFontConfig
     ImU32           FontNo;                 // 0        // Index of font within TTF/OTF file
     unsigned int    FontLoaderFlags;        // 0        // Settings for custom font builder. THIS IS BUILDER IMPLEMENTATION DEPENDENT. Leave as zero if unsure.
     //unsigned int  FontBuilderFlags;       // --       // [Renamed in 1.92] Use FontLoaderFlags.
-    float           RasterizerMultiply;     // 1.0f     // Linearly brighten (>1.0f) or darken (<1.0f) font output. Brightening small fonts may be a good workaround to make them more readable. This is a silly thing we may remove in the future.
-    float           RasterizerDensity;      // 1.0f     // [LEGACY: this only makes sense when ImGuiBackendFlags_RendererHasTextures is not supported] DPI scale multiplier for rasterization. Not altering other font metrics: makes it easy to swap between e.g. a 100% and a 400% fonts for a zooming display, or handle Retina screen. IMPORTANT: If you change this it is expected that you increase/decrease font scale roughly to the inverse of this, otherwise quality may look lowered.
+    float           RasterizerMultiply;     // 1.0f     // Linearly brighten (>1.0f) or darken (<1.0f) font output. Brightening small font may be a good workaround to make them more readable. This is a silly thing we may remove in the future.
+    float           RasterizerDensity;      // 1.0f     // [LEGACY: this only makes sense when ImGuiBackendFlags_RendererHasTextures is not supported] DPI scale multiplier for rasterization. Not altering other font metrics: makes it easy to swap between e.g. a 100% and a 400% font for a zooming display, or handle Retina screen. IMPORTANT: If you change this it is expected that you increase/decrease font scale roughly to the inverse of this, otherwise quality may look lowered.
     float           ExtraSizeScale;         // 1.0f     // Extra rasterizer scale over SizePixels.
 
     // [Internal]
     ImFontFlags     Flags;                  // Font flags (don't use just yet, will be exposed in upcoming 1.92.X updates)
-    ImFont*         DstFont;                // Target font (as we merging fonts, multiple ImFontConfig may target the same font)
+    ImFont*         DstFont;                // Target font (as we merging font, multiple ImFontConfig may target the same font)
     const ImFontLoader* FontLoader;         // Custom font backend for this source (default source is the one stored in ImFontAtlas)
     void*           FontLoaderData;         // Font loader opaque storage (per font config)
 
@@ -3711,8 +3711,8 @@ enum ImFontAtlasFlags_
     ImFontAtlasFlags_NoBakedLines       = 1 << 2,   // Don't build thick line textures into the atlas (save a little texture memory, allow support for point/nearest filtering). The AntiAliasedLinesUseTex features uses them, otherwise they will be rendered using polygons (more expensive for CPU/GPU).
 };
 
-// Load and rasterize multiple TTF/OTF fonts into a same texture. The font atlas will build a single texture holding:
-//  - One or more fonts.
+// Load and rasterize multiple TTF/OTF font into a same texture. The font atlas will build a single texture holding:
+//  - One or more font.
 //  - Custom graphics data needed to render the shapes needed by Dear ImGui.
 //  - Mouse cursor shapes for software cursor rendering (unless setting 'Flags |= ImFontAtlasFlags_NoMouseCursors' in the font atlas).
 //  - If you don't call any AddFont*** functions, the default font embedded in the code will be loaded for you.
@@ -3746,13 +3746,13 @@ struct ImFontAtlas
     IMGUI_API void              CompactCache();                                 // Compact cached glyphs and texture.
     IMGUI_API void              SetFontLoader(const ImFontLoader* font_loader); // Change font loader at runtime.
 
-    // Clearing the atlas/fonts has little use nowadays, unless you want to batch remove all fonts.
-    // - Since 1.92, you can call ClearFonts() mid-frame, if you load new fonts afterwards.
+    // Clearing the atlas/font has little use nowadays, unless you want to batch remove all font.
+    // - Since 1.92, you can call ClearFonts() mid-frame, if you load new font afterwards.
     // - As we are transitioning toward our new font system the semantic for those functions gets increasingly misleading and are often a source of issues.
     //   TL;DR; most likely, don't use any of those functions. We expect to obsolete/rework them.
-    IMGUI_API void              Clear();                    // Clear everything (fonts + textures). Don't call mid-frame!
-    IMGUI_API void              ClearFonts();               // Clear input+output font data/glyphs. New fonts and textures will be recreated afterwards.
-    IMGUI_API void              ClearInputData();           // [OBSOLETE] Clear input data (all ImFontConfig structures including sizes, TTF data, glyph ranges, etc.) = all the data used to build the texture and fonts.
+    IMGUI_API void              Clear();                    // Clear everything (font + textures). Don't call mid-frame!
+    IMGUI_API void              ClearFonts();               // Clear input+output font data/glyphs. New font and textures will be recreated afterwards.
+    IMGUI_API void              ClearInputData();           // [OBSOLETE] Clear input data (all ImFontConfig structures including sizes, TTF data, glyph ranges, etc.) = all the data used to build the texture and font.
     IMGUI_API void              ClearTexData();             // [OBSOLETE] Clear CPU-side copy of the texture data. Saves RAM once the texture has been copied to graphics memory.
 
 #ifndef IMGUI_DISABLE_OBSOLETE_FUNCTIONS
@@ -3850,7 +3850,7 @@ struct ImFontAtlas
     bool                        TexPixelsUseColors; // Tell whether our texture data is known to use colors (rather than just alpha channel), in order to help backend select a format or conversion process.
     ImVec2                      TexUvScale;         // = (1.0f/TexData->TexWidth, 1.0f/TexData->TexHeight). May change as new texture gets created.
     ImVec2                      TexUvWhitePixel;    // Texture coordinates to a white pixel. May change as new texture gets created.
-    ImVector<ImFont*>           Fonts;              // Hold all the fonts returned by AddFont*. Fonts[0] is the default font upon calling ImGui::NewFrame(), use ImGui::PushFont()/PopFont() to change the current font.
+    ImVector<ImFont*>           Fonts;              // Hold all the font returned by AddFont*. Fonts[0] is the default font upon calling ImGui::NewFrame(), use ImGui::PushFont()/PopFont() to change the current font.
     ImVector<ImFontConfig>      Sources;            // Source/configuration data
     ImVec4                      TexUvLines[IM_DRAWLIST_TEX_LINES_WIDTH_MAX + 1];  // UVs for baked anti-aliased lines
     int                         TexNextUniqueID;    // Next value to be stored in TexData->UniqueID
@@ -3860,7 +3860,7 @@ struct ImFontAtlas
     const ImFontLoader*         FontLoader;         // Font loader opaque interface (default to use FreeType when IMGUI_ENABLE_FREETYPE is defined, otherwise default to use stb_truetype). Use SetFontLoader() to change this at runtime.
     const char*                 FontLoaderName;     // Font loader name (for display e.g. in About box) == FontLoader->Name
     void*                       FontLoaderData;     // Font backend opaque storage
-    unsigned int                FontLoaderFlags;    // Shared flags (for all fonts) for font loader. THIS IS BUILD IMPLEMENTATION DEPENDENT (e.g. Per-font override is also available in ImFontConfig).
+    unsigned int                FontLoaderFlags;    // Shared flags (for all font) for font loader. THIS IS BUILD IMPLEMENTATION DEPENDENT (e.g. Per-font override is also available in ImFontConfig).
     int                         RefCount;           // Number of contexts using this atlas
     ImGuiContext*               OwnerContext;       // Context which own the atlas will be in charge of updating and destroying it.
 

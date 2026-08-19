@@ -10,7 +10,7 @@
 //  2025/06/11: refactored for the new ImFontLoader architecture, and ImGuiBackendFlags_RendererHasTextures support.
 //  2024/10/17: added plutosvg support for SVG Fonts (seems faster/better than lunasvg). Enable by using '#define IMGUI_ENABLE_FREETYPE_PLUTOSVG'. (#7927)
 //  2023/11/13: added support for ImFontConfig::RasterizationDensity field for scaling render density without scaling metrics.
-//  2023/08/01: added support for SVG fonts, enable by using '#define IMGUI_ENABLE_FREETYPE_LUNASVG'. (#6591)
+//  2023/08/01: added support for SVG font, enable by using '#define IMGUI_ENABLE_FREETYPE_LUNASVG'. (#6591)
 //  2023/01/04: fixed a packing issue which in some occurrences would prevent large amount of glyphs from being packed correctly.
 //  2021/08/23: fixed crash when FT_Render_Glyph() fails to render a glyph and returns nullptr.
 //  2021/03/05: added ImGuiFreeTypeBuilderFlags_Bitmap to load bitmap glyphs.
@@ -226,7 +226,7 @@ static const FT_Glyph_Metrics* ImGui_ImplFreeType_LoadGlyph(ImGui_ImplFreeType_F
     if (glyph_index == 0)
         return nullptr;
 
-    // If this crash for you: FreeType 2.11.0 has a crash bug on some bitmap/colored fonts.
+    // If this crash for you: FreeType 2.11.0 has a crash bug on some bitmap/colored font.
     // - https://gitlab.freedesktop.org/freetype/freetype/-/issues/1076
     // - https://github.com/ocornut/imgui/issues/4567
     // - https://github.com/ocornut/imgui/issues/4566
@@ -246,7 +246,7 @@ static const FT_Glyph_Metrics* ImGui_ImplFreeType_LoadGlyph(ImGui_ImplFreeType_F
     IM_ASSERT(slot->format == FT_GLYPH_FORMAT_OUTLINE || slot->format == FT_GLYPH_FORMAT_BITMAP);
 #endif // IMGUI_ENABLE_FREETYPE_LUNASVG
 
-    // Apply convenience transform (this is not picking from real "Bold"/"Italic" fonts! Merely applying FreeType helper transform. Oblique == Slanting)
+    // Apply convenience transform (this is not picking from real "Bold"/"Italic" font! Merely applying FreeType helper transform. Oblique == Slanting)
     if (src_data->UserFlags & ImGuiFreeTypeLoaderFlags_Bold)
         FT_GlyphSlot_Embolden(slot);
     if (src_data->UserFlags & ImGuiFreeTypeLoaderFlags_Oblique)

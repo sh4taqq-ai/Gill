@@ -7,7 +7,7 @@
 // - Base85:   ~5 bytes of source code for 4 bytes of input data. 5 bytes stored in binary (suggested by @mmalex).
 // - As int:  ~11 bytes of source code for 4 bytes of input data. 4 bytes stored in binary. Endianness dependent, need swapping on big-endian CPU.
 // - As char: ~12 bytes of source code for 4 bytes of input data. 4 bytes stored in binary. Not endianness dependent.
-// Load compressed TTF fonts with ImGui::GetIO().Fonts->AddFontFromMemoryCompressedTTF()
+// Load compressed TTF font with ImGui::GetIO().Fonts->AddFontFromMemoryCompressedTTF()
 
 // Build with, e.g:
 //   # cl.exe binary_to_compressed_c.cpp

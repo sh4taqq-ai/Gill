@@ -2696,7 +2696,7 @@ ImFontAtlas::~ImFontAtlas()
 }
 
 // You probably should not call this directly. It is not well specified.
-// If you want to replace all your fonts mid-frame, most likely you should instead call ClearFonts() then load the new fonts.
+// If you want to replace all your font mid-frame, most likely you should instead call ClearFonts() then load the new font.
 // Calling this mid-frame will discard the CPU-side copy of the texture data which is generally unreliable as you may have textures queued for creation or updates.
 void ImFontAtlas::Clear()
 {
@@ -2780,7 +2780,7 @@ static void ImFontAtlasBuildUpdateRendererHasTexturesFromContext(ImFontAtlas* at
 
 // Called by NewFrame() for atlases owned by a context.
 // If you manually manage font atlases, you'll need to call this yourself.
-// - 'frame_count' needs to be provided because we can gc/prioritize baked fonts based on their age.
+// - 'frame_count' needs to be provided because we can gc/prioritize baked font based on their age.
 // - 'frame_count' may not match those of all imgui contexts using this atlas, as contexts may be updated as different frequencies. But generally you can use ImGui::GetFrameCount() on one of your context.
 void ImFontAtlasUpdateNewFrame(ImFontAtlas* atlas, int frame_count, bool renderer_has_textures)
 {
@@ -2813,7 +2813,7 @@ void ImFontAtlasUpdateNewFrame(ImFontAtlas* atlas, int frame_count, bool rendere
     if (atlas->RendererHasTextures)
     {
         atlas->TexIsBuilt = true;
-        if (atlas->Builder == NULL) // This will only happen if fonts were not already loaded.
+        if (atlas->Builder == NULL) // This will only happen if font were not already loaded.
             ImFontAtlasBuildMain(atlas);
     }
     // Legacy backend
@@ -3112,7 +3112,7 @@ ImFont* ImFontAtlas::AddFont(const ImFontConfig* font_cfg_in)
     ImFontAtlasBuildUpdatePointers(this); // Pointers to Sources are otherwise dangling after we called Sources.push_back().
 
     // Sanity check
-    // We don't round cfg.SizePixels yet as relative size of merged fonts are used afterwards.
+    // We don't round cfg.SizePixels yet as relative size of merged font are used afterwards.
     if (font_cfg->GlyphExcludeRanges != NULL)
     {
         int size = 0;
@@ -3153,7 +3153,7 @@ ImFont* ImFontAtlas::AddFont(const ImFontConfig* font_cfg_in)
     return font;
 }
 
-// Default font TTF is compressed with stb_compress then base85 encoded (see misc/fonts/binary_to_compressed_c.cpp for encoder)
+// Default font TTF is compressed with stb_compress then base85 encoded (see misc/font/binary_to_compressed_c.cpp for encoder)
 static unsigned int stb_decompress_length(const unsigned char* input);
 static unsigned int stb_decompress(unsigned char* output, const unsigned char* input, unsigned int length);
 static unsigned int Decode85Byte(char c)                                    { return c >= '\\' ? c-36 : c-35; }
@@ -3324,7 +3324,7 @@ void ImFontAtlasBuildNotifySetFont(ImFontAtlas* atlas, ImFont* old_font, ImFont*
         if (ImGuiContext* ctx = shared_data->Context)
         {
             // While this should work either way, we save ourselves the bother / debugging confusion of running ImGui code so early when it is not needed.
-            // Also fixes erroneously rewriting style.FontSizeBase during init if adding default fonts.
+            // Also fixes erroneously rewriting style.FontSizeBase during init if adding default font.
             if (old_font == NULL && ctx->Font == NULL && ctx->FontSizeBase == 0.0f)
                 continue;
 
@@ -3403,7 +3403,7 @@ void ImFontAtlas::RemoveCustomRect(ImFontAtlasRectId id)
 }
 
 #ifndef IMGUI_DISABLE_OBSOLETE_FUNCTIONS
-// This API does not make sense anymore with scalable fonts.
+// This API does not make sense anymore with scalable font.
 // - Prefer adding a font source (ImFontConfig) using a custom/procedural loader.
 // - You may use ImFontFlags_LockBakedSizes to limit an existing font to known baked sizes:
 //     ImFont* myfont = io.Fonts->AddFontFromFileTTF(....);
@@ -3796,7 +3796,7 @@ static ImFontGlyph* ImFontAtlasBuildSetupFontBakedEllipsis(ImFontAtlas* atlas, I
     ImFontGlyph glyph_in = {};
     ImFontGlyph* glyph = &glyph_in;
     glyph->Codepoint = font->EllipsisChar;
-    glyph->AdvanceX = ImMax(dot_glyph->AdvanceX, dot_glyph->X0 + dot_step * 3.0f - dot_spacing); // FIXME: Slightly odd for normally mono-space fonts but since this is used for trailing contents.
+    glyph->AdvanceX = ImMax(dot_glyph->AdvanceX, dot_glyph->X0 + dot_step * 3.0f - dot_spacing); // FIXME: Slightly odd for normally mono-space font but since this is used for trailing contents.
     glyph->X0 = dot_glyph->X0;
     glyph->Y0 = dot_glyph->Y0;
     glyph->X1 = dot_glyph->X0 + dot_step * 3 - dot_spacing;
@@ -3841,7 +3841,7 @@ static void ImFontAtlasBuildSetupFontBakedFallback(ImFontBaked* baked)
 
 static void ImFontAtlasBuildSetupFontBakedBlanks(ImFontAtlas* atlas, ImFontBaked* baked)
 {
-    // Mark space as always hidden (not strictly correct/necessary. but some e.g. icons fonts don't have a space. it tends to look neater in previews)
+    // Mark space as always hidden (not strictly correct/necessary. but some e.g. icons font don't have a space. it tends to look neater in previews)
     ImFontGlyph* space_glyph = baked->FindGlyphNoFallback((ImWchar)' ');
     if (space_glyph != NULL)
         space_glyph->Visible = false;
@@ -3858,7 +3858,7 @@ static void ImFontAtlasBuildSetupFontBakedBlanks(ImFontAtlas* atlas, ImFontBaked
 }
 
 // Load/identify special glyphs
-// (note that this is called again for fonts with MergeMode)
+// (note that this is called again for font with MergeMode)
 void ImFontAtlasBuildSetupFontSpecialGlyphs(ImFontAtlas* atlas, ImFont* font, ImFontConfig* src)
 {
     IM_UNUSED(atlas);
@@ -3875,7 +3875,7 @@ void ImFontAtlasBuildSetupFontSpecialGlyphs(ImFontAtlas* atlas, ImFont* font, Im
             }
 
     // Setup Ellipsis character. It is required for rendering elided text. We prefer using U+2026 (horizontal ellipsis).
-    // However some old fonts may contain ellipsis at U+0085. Here we auto-detect most suitable ellipsis character.
+    // However some old font may contain ellipsis at U+0085. Here we auto-detect most suitable ellipsis character.
     // FIXME: Note that 0x2026 is rarely included in our font ranges. Because of this we are more likely to use three individual dots.
     const ImWchar ellipsis_chars[] = { src->EllipsisChar, (ImWchar)0x2026, (ImWchar)0x0085 };
     if (font->EllipsisChar == 0)
@@ -4358,7 +4358,7 @@ void ImFontAtlasBuildInit(ImFontAtlas* atlas)
     // Add required texture data
     ImFontAtlasBuildUpdateTexData(atlas);
 
-    // Register fonts
+    // Register font
     ImFontAtlasBuildUpdatePointers(atlas);
 
     // Update UV coordinates etc. stored in bound ImDrawListSharedData instance
@@ -4371,7 +4371,7 @@ void ImFontAtlasBuildInit(ImFontAtlas* atlas)
     ImTextInitClassifiers();
 }
 
-// Destroy builder and all cached glyphs. Do not destroy actual fonts.
+// Destroy builder and all cached glyphs. Do not destroy actual font.
 void ImFontAtlasBuildDestroy(ImFontAtlas* atlas)
 {
     for (ImFont* font : atlas->Fonts)
@@ -5259,7 +5259,7 @@ bool ImFont::IsGlyphRangeUnused(unsigned int c_begin, unsigned int c_last)
 
 // x0/y0/x1/y1 are offset from the character upper-left layout position, in pixels. Therefore x0/y0 are often fairly close to zero.
 // Not to be mistaken with texture coordinates, which are held by u0/v0/u1/v1 in normalized format (0.0..1.0 on each texture axis).
-// - 'src' is not necessarily == 'this->Sources' because multiple source fonts+configs can be used to build one target font.
+// - 'src' is not necessarily == 'this->Sources' because multiple source font+configs can be used to build one target font.
 ImFontGlyph* ImFontAtlasBakedAddFontGlyph(ImFontAtlas* atlas, ImFontBaked* baked, ImFontConfig* src, const ImFontGlyph* in_glyph)
 {
     int glyph_idx = baked->Glyphs.Size;
@@ -6252,7 +6252,7 @@ void ImGui::RenderColorRectWithAlphaCheckerboard(ImDrawList* draw_list, ImVec2 p
 // [SECTION] Decompression code
 //-----------------------------------------------------------------------------
 // Compressed with stb_compress() then converted to a C array and encoded as base85.
-// Use the program in misc/fonts/binary_to_compressed_c.cpp to create the array from a TTF file.
+// Use the program in misc/font/binary_to_compressed_c.cpp to create the array from a TTF file.
 // The purpose of encoding as base85 instead of "0x00,0x01,..." style is only save on _source code_ size.
 // Decompression from stb.h (public domain) by Sean Barrett https://github.com/nothings/stb/blob/master/stb.h
 //-----------------------------------------------------------------------------

@@ -22,6 +22,10 @@ bool Input::IsKeyDown(int Key) const {
     return glfwGetKey(window_->GetWindow(),Key) == GLFW_PRESS;
 }
 
+bool Input::IsMouseButtonDown(int Button) const {
+    return glfwGetMouseButton(window_->GetWindow(),Button) == GLFW_PRESS;
+}
+
 mathpp::vec2f Input::GetMouseDelta() const {
     return mouseDelta;
 }
