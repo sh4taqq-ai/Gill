@@ -7,6 +7,7 @@ class OrbitCamera {
 public:
     void Update(Input* input,const mathpp::vec3f& target);
     [[nodiscard]] mathpp::mat4f GetViewMatrix() const;
+    [[nodiscard]] mathpp::vec3f GetViewTarget() const;
     private:
     mathpp::mat4f viewMatrix;
     mathpp::vec3f target = {0.0f,0.0f,0.0f};
@@ -20,11 +21,14 @@ class FreeCamera {
     public:
     void Update(Input* input,float deltaTime);
     [[nodiscard]] mathpp::mat4f GetViewMatrix() const;
+    [[nodiscard]] mathpp::vec3f GetPosition() const;
+    [[nodiscard]] mathpp::vec3f GetViewTarget() const;
     private:
     mathpp::mat4f viewMatrix;
     mathpp:: vec3f position = {0.0f,0.0f,-4.0f};
+    mathpp::vec3f camFront = {0.0f,0.0f,0.0f};
     float speed = 20.0f;
-    float sens = 1.0f;
+    float sens = 0.5f;
     float yaw = 0.0f;
     float pitch = 0.0f;
 

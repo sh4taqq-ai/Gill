@@ -17,12 +17,12 @@ namespace mathpp {
     }
 
     template <typename T>
-    T clamp(T value,T min,T max) {
-        if (value < min) {
-            return min;
+    T clamp(T value,T minVal,T maxVal) {
+        if (value < minVal) {
+            return minVal;
         }
-        if (value > max) {
-            return max;
+        if (value > maxVal) {
+            return maxVal;
         }
         return value;
     }

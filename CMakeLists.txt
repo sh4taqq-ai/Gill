@@ -28,9 +28,14 @@ add_executable(gill source/gill/main.cpp)
 
 
 
-file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/asset"
-        DESTINATION "${CMAKE_CURRENT_BINARY_DIR}"
+add_custom_target(copy_assets ALL
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${CMAKE_CURRENT_SOURCE_DIR}/asset"
+        "${CMAKE_CURRENT_BINARY_DIR}/asset"
+        COMMENT "Copying assets to build directory"
 )
+
+add_dependencies(gill copy_assets)
 
 
 

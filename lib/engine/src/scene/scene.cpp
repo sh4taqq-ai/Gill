@@ -11,12 +11,16 @@ void Scene::DestroyEntity(Entity entity) {
     entityManager.DestroyEntity(entity);
 }
 
-Scene::Scene() {
 
+
+
+
+const Mesh *Scene::GetMesh(AssetID id) const {
+    return meshManager.Get(id);
 }
 
-Scene::~Scene() {
-
+const Shader *Scene::GetShader(AssetID id) const {
+    return shaderManager.Get(id);
 }
 
 const std::unordered_map<Entity, MeshComponent>& Scene::GetAllMeshes() const {
@@ -33,6 +37,10 @@ void Scene::AddTransform(Entity entity, const TransformComponent& transform) {
 
 void Scene::AddMesh(Entity entity, const MeshComponent &mesh) {
     meshes.insert({entity, mesh});
+}
+
+void Scene::AddSunlight(Entity entity, const SunlightComponent &sun) {
+    sunlights.insert({entity, sun});
 }
 
 std::optional<Entity> Scene::SelectEntity(const Ray& ray, float radius) const {
@@ -53,3 +61,8 @@ std::optional<Entity> Scene::GetSelected() const {
 void Scene::SetSelected(const std::optional<Entity> &value) {
     selected = value;
 }
+
+const std::unordered_map<Entity, SunlightComponent> &Scene::GetAllSunlights() const {
+    return  sunlights;
+}
+

@@ -2,9 +2,16 @@
 #include <memory>
 #include "mesh.hpp"
 
+enum class PrimitiveType {
+    Cube,
+    Plane,
+    Sphere,
+    Cylinder,
+    Cone
+};
 
 
-std::unique_ptr<Mesh> inline CreatePlane() {
+Mesh inline CreatePlane() {
     Vertex vert1({-1.0f,0.0f,-1.0f},{0.0f,1.0f,0.0f},{0.0f,0.0f});
     Vertex vert2({1.0f,0.0f,-1.0f},{0.0f,1.0f,0.0f},{1.0f,0.0f});
     Vertex vert3({-1.0f,0.0f,1.0f},{0.0f,1.0f,0.0f},{0.0f,1.0f});
@@ -12,12 +19,12 @@ std::unique_ptr<Mesh> inline CreatePlane() {
     std::vector<Vertex> planeVert = {vert1,vert2,vert3,vert4};
     std::vector<unsigned int> planeIndices = {0,1,2,1,2,3};
 
-    std::unique_ptr<Mesh> mesh = std::make_unique<Mesh>(planeVert,planeIndices);
+    Mesh mesh(planeVert,planeIndices);
 
     return  mesh;
 }
 
-inline std::unique_ptr<Mesh> CreateCube() {
+inline Mesh CreateCube() {
     std::vector<Vertex> verts = {
         // Front face (+z), normal (0,0,1)
         Vertex({-1,-1, 1}, {0,0,1}, {0,0}),
@@ -66,40 +73,12 @@ inline std::unique_ptr<Mesh> CreateCube() {
         indices.push_back(base + 3);
         indices.push_back(base + 0);
     }
-
-    return std::make_unique<Mesh>(verts, indices);
+    Mesh mesh(verts, indices);
+    return mesh;
 }
-/*
- * UV Sphere parameterization
- *
- * The sphere is described using two parameters:
- *
- *   phi   = latitude angle, moves from bottom → top
- *   theta = longitude angle, moves around each ring
- *
- * We discretize the continuous surface:
- *
- *   rings    → number of latitude divisions
- *   segments → number of divisions around each ring
- *
- * Angular step:
- *
- *   Δphi   = π / rings
- *   Δtheta = 2π / segments
- *
- * For a particular vertex:
- *
- *   phi   = -π/2 + ring * Δphi
- *   theta =          segment * Δtheta
- *
- * Position:
- *
- *   x = r cos(phi) cos(theta)
- *   y = r sin(phi)
- *   z = r cos(phi) sin(theta)
- */
 
-std::unique_ptr<Mesh>  inline CreateSphere(unsigned int rings, unsigned int segments,float radius) {
+
+Mesh  inline CreateSphere(unsigned int rings, unsigned int segments,float radius) {
     std::vector<Vertex> vertices;
     std::vector<unsigned int> indices;
 
@@ -170,11 +149,11 @@ std::unique_ptr<Mesh>  inline CreateSphere(unsigned int rings, unsigned int segm
         }
     }
 
-    std::unique_ptr<Mesh> mesh = std::make_unique<Mesh>(vertices, indices);
+    Mesh mesh(vertices,indices);
     return  mesh;
 }
 
-std::unique_ptr<Mesh> inline CreateCylinder(unsigned int segments,float radius, float height) {
+Mesh inline CreateCylinder(unsigned int segments,float radius, float height) {
     std::vector<Vertex> vertices;
     std::vector<unsigned int> indices;
     // Top vertices
@@ -228,10 +207,132 @@ std::unique_ptr<Mesh> inline CreateCylinder(unsigned int segments,float radius, 
         indices.push_back(bottom1);
     }
 
-    std::unique_ptr<Mesh> mesh = std::make_unique<Mesh>(vertices, indices);
+    unsigned int topCenterIndex = static_cast<unsigned int>(vertices.size());
+    vertices.push_back({ {0.0f, height/2, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.5f, 0.5f} });
+
+    unsigned int topCapStart = static_cast<unsigned int>(vertices.size());
+    for (unsigned int segment = 0; segment < segments; ++segment) {
+        float theta = 2.0f * mathpp::PI<float> * static_cast<float>(segment) / static_cast<float>(segments);
+        float x = radius * cosf(theta);
+        float z = radius * sinf(theta);
+        mathpp::vec3f pos{x, height/2, z};
+        mathpp::vec3f normal{0.0f, 1.0f, 0.0f}; // flat up, not radial
+        mathpp::vec2f texCoord{0.5f + 0.5f*cosf(theta), 0.5f + 0.5f*sinf(theta)};
+        vertices.push_back({pos, normal, texCoord});
+    }
+    for (unsigned int s = 0; s < segments; ++s) {
+        unsigned int curr = topCapStart + s;
+        unsigned int next = topCapStart + (s + 1) % segments;
+        indices.push_back(topCenterIndex);
+        indices.push_back(curr);
+        indices.push_back(next);
+    }
+
+    // --- Bottom cap ---
+    unsigned int botCenterIndex = static_cast<unsigned int>(vertices.size());
+    vertices.push_back({ {0.0f, -height/2, 0.0f}, {0.0f, -1.0f, 0.0f}, {0.5f, 0.5f} });
+
+    unsigned int botCapStart = static_cast<unsigned int>(vertices.size());
+    for (unsigned int segment = 0; segment < segments; ++segment) {
+        float theta = 2.0f * mathpp::PI<float> * static_cast<float>(segment) / static_cast<float>(segments);
+        float x = radius * cosf(theta);
+        float z = radius * sinf(theta);
+        mathpp::vec3f pos{x, -height/2, z};
+        mathpp::vec3f normal{0.0f, -1.0f, 0.0f};
+        mathpp::vec2f texCoord{0.5f + 0.5f*cosf(theta), 0.5f + 0.5f*sinf(theta)};
+        vertices.push_back({pos, normal, texCoord});
+    }
+    for (unsigned int s = 0; s < segments; ++s) {
+        unsigned int curr = botCapStart + s;
+        unsigned int next = botCapStart + (s + 1) % segments;
+        // note: reversed winding vs top cap, since bottom faces the opposite direction
+        indices.push_back(botCenterIndex);
+        indices.push_back(next);
+        indices.push_back(curr);
+    }
+
+    Mesh mesh(vertices, indices);
     return  mesh;
 }
 
 
+std::unique_ptr<Mesh> inline CreateGridPlane(float extent) {
+    Vertex vert1({-extent, 0.0f, -extent}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f});
+    Vertex vert2({ extent, 0.0f, -extent}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f});
+    Vertex vert3({-extent, 0.0f,  extent}, {0.0f, 1.0f, 0.0f}, {0.0f, 1.0f});
+    Vertex vert4({ extent, 0.0f,  extent}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f});
+    std::vector<Vertex> vertices = {vert1, vert2, vert3, vert4};
+    std::vector<unsigned int> planeIndices = {0, 1, 2, 1, 2, 3};
+    std::unique_ptr<Mesh> mesh = std::make_unique<Mesh>(vertices, planeIndices);
+
+    return mesh;
+}
+
+Mesh inline CreateCone(unsigned int segments, float radius, float height) {
+    std::vector<Vertex> vertices;
+    std::vector<unsigned int> indices;
+
+    float slantLen = sqrtf(height * height + radius * radius);
+    float normalXZScale = height / slantLen;
+    float normalYScale = radius / slantLen;
+
+    // Apex vertex (one shared point at the tip — but see note below on why this is actually wrong for shading)
+    unsigned int apexIndex = 0;
+    vertices.push_back({ {0.0f, height, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.5f, 1.0f} }); // placeholder normal, fixed below
+
+    // Base ring (side surface, slanted normals)
+    unsigned int baseStart = static_cast<unsigned int>(vertices.size());
+    for (unsigned int segment = 0; segment < segments; ++segment) {
+        float theta = 2.0f * mathpp::PI<float> * static_cast<float>(segment) / static_cast<float>(segments);
+        float x = radius * cosf(theta);
+        float z = radius * sinf(theta);
+        mathpp::vec3f pos{x, 0.0f, z};
+        mathpp::vec3f normal{cosf(theta) * normalXZScale, normalYScale, sinf(theta) * normalXZScale};
+        mathpp::vec2f texCoord{static_cast<float>(segment) / segments, 0.0f};
+        vertices.push_back({pos, normal, texCoord});
+    }
+
+    // Side triangles: apex to each base edge
+    for (unsigned int s = 0; s < segments; ++s) {
+        unsigned int curr = baseStart + s;
+        unsigned int next = baseStart + (s + 1) % segments;
+        indices.push_back(apexIndex);
+        indices.push_back(curr);
+        indices.push_back(next);
+    }
+
+    // Bottom cap (flat, same fan-from-center technique as the cylinder)
+    unsigned int botCenterIndex = static_cast<unsigned int>(vertices.size());
+    vertices.push_back({ {0.0f, 0.0f, 0.0f}, {0.0f, -1.0f, 0.0f}, {0.5f, 0.5f} });
+
+    unsigned int botCapStart = static_cast<unsigned int>(vertices.size());
+    for (unsigned int segment = 0; segment < segments; ++segment) {
+        float theta = 2.0f * mathpp::PI<float> * static_cast<float>(segment) / static_cast<float>(segments);
+        float x = radius * cosf(theta);
+        float z = radius * sinf(theta);
+        vertices.push_back({ {x, 0.0f, z}, {0.0f, -1.0f, 0.0f}, {0.5f + 0.5f*cosf(theta), 0.5f + 0.5f*sinf(theta)} });
+    }
+    for (unsigned int s = 0; s < segments; ++s) {
+        unsigned int curr = botCapStart + s;
+        unsigned int next = botCapStart + (s + 1) % segments;
+        indices.push_back(botCenterIndex);
+        indices.push_back(next);
+        indices.push_back(curr);
+    }
+
+    Mesh mesh(vertices, indices);
+    return mesh;
+}
 
 
+inline Mesh CreatePrimitive(PrimitiveType type) {
+    switch (type) {
+        case PrimitiveType::Cube:   return CreateCube();
+        case PrimitiveType::Sphere: return CreateSphere(15, 15, 2.0f);
+        case PrimitiveType::Plane:  return CreatePlane();
+        case PrimitiveType::Cylinder: return CreateCylinder(15,1.0f,2.0f);
+        case PrimitiveType::Cone : return CreateCone(15,1.0f,2.0f);
+    }
+    //unreachable if all enum cases handled, but compilers often want a fallback:
+    return CreateCube();
+}

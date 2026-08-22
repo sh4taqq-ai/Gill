@@ -7,10 +7,9 @@ uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
 
-out vec4 vertexColor; // Specify a color output to the fragment shader
+
 
 void main()
 {
     gl_Position = projection * view * model * vec4(position,1.0f);
-    vertexColor = vec4(0.5f, 0.0f, 0.0f, 1.0f); // Set the output variable to a dark-red color
 }

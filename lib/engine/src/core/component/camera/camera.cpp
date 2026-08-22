@@ -24,6 +24,10 @@ mathpp::mat4f OrbitCamera::GetViewMatrix() const {
     return viewMatrix;
 }
 
+mathpp::vec3f OrbitCamera::GetViewTarget() const {
+    return target;
+}
+
 void FreeCamera::Update(Input *input,float deltaTime) {
     mathpp::vec2f delta = input->GetMouseDelta();
     if (input->IsMouseButtonDown(GLFW_MOUSE_BUTTON_MIDDLE)) {
@@ -37,24 +41,31 @@ void FreeCamera::Update(Input *input,float deltaTime) {
     front.x = cos(mathpp::to_radians(yaw)) * cos(mathpp::to_radians(pitch));
     front.y = sin(mathpp::to_radians(pitch));
     front.z = sin(mathpp::to_radians(yaw)) * cos(mathpp::to_radians(pitch));
-    mathpp::vec3f cameraFront = mathpp::normalize(front);
-    std::cout<<"front.x: "<<cameraFront.x<<"front.y: "<<cameraFront.y<<"front.z: "<<cameraFront.z<<std::endl;
+    camFront = mathpp::normalize(front);
     if (input->IsMouseButtonDown(GLFW_MOUSE_BUTTON_MIDDLE)) {
         if (input->IsKeyDown(GLFW_KEY_W)) {
-            position +=  cameraFront * speed * deltaTime;
+            position +=  camFront * speed * deltaTime;
         }
         if (input->IsKeyDown(GLFW_KEY_S)) {
-            position -=  cameraFront * speed * deltaTime;
+            position -=  camFront * speed * deltaTime;
         }
         if (input->IsKeyDown(GLFW_KEY_A))
-        {position -=  mathpp::normalize(mathpp::cross(cameraFront,{0.0f,1.0f,0.0f})) * speed * deltaTime;}
+        {position -=  mathpp::normalize(mathpp::cross(camFront,{0.0f,1.0f,0.0f})) * speed * deltaTime;}
         if (input->IsKeyDown(GLFW_KEY_D))
-        {position +=  mathpp::normalize(mathpp::cross(cameraFront,{0.0f,1.0f,0.0f})) * speed * deltaTime;}
+        {position +=  mathpp::normalize(mathpp::cross(camFront,{0.0f,1.0f,0.0f})) * speed * deltaTime;}
     }
-    viewMatrix = mathpp::look_at(position,cameraFront+position,{0.0f,1.0f,0.0f});
-    std::cout << position.x << " " << position.y << " " << position.z << std::endl;
+    viewMatrix = mathpp::look_at(position,camFront+position,{0.0f,1.0f,0.0f});
+
 }
 
 mathpp::mat4f FreeCamera::GetViewMatrix() const {
     return viewMatrix;
+}
+
+mathpp::vec3f FreeCamera::GetPosition() const {
+    return position;
+}
+
+mathpp::vec3f FreeCamera::GetViewTarget() const {
+    return camFront;
 }

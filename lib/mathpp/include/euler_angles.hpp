@@ -6,21 +6,25 @@
 
 namespace mathpp {
     struct EulerAngles {
-        mathpp::mat4f Rx;
-        mathpp::mat4f Ry;
-        mathpp::mat4f Rz;
+        mat4f Rx;
+        mat4f Ry;
+        mat4f Rz;
     };
 
 
     template <typename T>
-    mathpp::mat4<T> EulerAnglesRotation(const vec3<T> & r) {
+    mat4<T> EulerAnglesRotation(const vec3<T> & r) {
         EulerAngles euler;
-        T cx = cos(r.x);
-        T sx = sin(r.x);
-        T cy = cos(r.y);
-        T sy = sin(r.y);
-        T cz = cos(r.z);
-        T sz = sin(r.z);
+        T rx = to_radians(r.x);
+        T ry = to_radians(r.y);
+        T rz = to_radians(r.z);
+
+        T cx = cos(rx);
+        T sx = sin(rx);
+        T cy = cos(ry);
+        T sy = sin(ry);
+        T cz = cos(rz);
+        T sz = sin(rz);
 
         euler.Rx.col[0][0] = 1;
         euler.Rx.col[1][0] = 0;

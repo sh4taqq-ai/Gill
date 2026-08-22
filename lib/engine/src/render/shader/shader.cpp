@@ -51,10 +51,18 @@ Shader::Shader(const std::string& vertPath,const std::string& fragPath) {
     char infoLogf[512];
 
     glCompileShader(fragmentShader);
-    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &successf);
+    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &successf);
     if (!successf) {
         glGetShaderInfoLog(vertexShader, 512, NULL, infoLogf);
         std::cerr << "Fragment shader compile error:\n" << infoLogf << std::endl;
+    }
+
+    int successLink;
+    glGetProgramiv(ID, GL_LINK_STATUS, &successLink);
+    if (!successLink) {
+        char infoLog[512];
+        glGetProgramInfoLog(ID, 512, NULL, infoLog);
+        std::cerr << "Shader program link error:\n" << infoLog << std::endl;
     }
 
 
@@ -84,6 +92,32 @@ void Shader::setMat4f(const std::string &name, const mathpp::mat4f& matrix ) con
     glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()),1,GL_FALSE,p);
 }
 
-void Shader::Use() {
+void Shader::setVec2f(const std::string &name, const mathpp::vec2f& vector) const {
+    const float* p = &vector.x;
+    glUniform2fv(glGetUniformLocation(ID, name.c_str()),1,p);
+}
+
+void Shader::setVec3f(const std::string &name, const mathpp::vec3f &vector) const {
+    const float*p = &vector.x;
+    glUniform3fv(glGetUniformLocation(ID, name.c_str()),1,p);
+}
+void Shader::Use() const {
     glUseProgram(ID);
+}
+
+Shader::~Shader() {
+    glDeleteProgram(ID);
+}
+
+Shader::Shader(Shader&& other) noexcept : ID(other.ID) {
+    other.ID = 0;
+}
+
+Shader& Shader::operator=(Shader&& other) noexcept {
+    if (this != &other) {
+        glDeleteProgram(ID);   // clean up whatever this Shader currently owns
+        ID = other.ID;
+        other.ID = 0;
+    }
+    return *this;
 }

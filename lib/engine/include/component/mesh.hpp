@@ -1,8 +1,11 @@
 #pragma once
+#include <cstdint>
 #include "../render/mesh/mesh.hpp"
 #include "../render/shader/shader.hpp"
 
+using AssetID = uint32_t;
+
 struct MeshComponent {
- Mesh* mesh;
- Shader* shader;
+ AssetID meshID;
+ AssetID shaderID;
 };

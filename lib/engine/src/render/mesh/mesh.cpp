@@ -22,7 +22,7 @@ Mesh::Mesh(const std::vector<Vertex> &vertices, const std::vector<unsigned int> 
   glBindVertexArray(0);
 }
 
-void Mesh::Draw() {
+void Mesh::Draw() const {
   glBindVertexArray(VAO);
   glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, 0);
   glBindVertexArray(0);
@@ -32,4 +32,27 @@ Mesh::~Mesh() {
   glDeleteVertexArrays(1, &VAO);
   glDeleteBuffers(1, &VBO);
   glDeleteBuffers(1, &EBO);
+}
+
+
+Mesh::Mesh(Mesh&& other) noexcept
+    : VAO(other.VAO), VBO(other.VBO), EBO(other.EBO), indexCount(other.indexCount) {
+  other.VAO = other.VBO = other.EBO = 0; // so the moved-from destructor is a no-op
+  other.indexCount = 0;
+}
+
+Mesh& Mesh::operator=(Mesh&& other) noexcept {
+  if (this != &other) {
+    // clean up whatever this Mesh currently owns first
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO);
+    glDeleteBuffers(1, &EBO);
+
+    VAO = other.VAO; VBO = other.VBO; EBO = other.EBO;
+    indexCount = other.indexCount;
+
+    other.VAO = other.VBO = other.EBO = 0;
+    other.indexCount = 0;
+  }
+  return *this;
 }

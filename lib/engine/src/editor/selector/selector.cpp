@@ -1,4 +1,6 @@
-#include "../include/core/system/selector/selector.hpp"
+#include "../include/editor/selector/selector.hpp"
+
+
 
 
 void Selector::Init(unsigned int width, unsigned int height) {
@@ -37,7 +39,7 @@ void Selector::RenderScene(Scene* scene, const mathpp::mat4f& view, const mathpp
         selectShader->setMat4f("view", view);
         selectShader->setMat4f("projection", projection);
         selectShader->setInt("ObjectID", static_cast<int>(entity));
-        meshComp.mesh->Draw();
+        scene->GetMesh(meshComp.meshID)->Draw();
     }
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -56,3 +58,4 @@ std::optional<Entity> Selector::ReadEntityAt(int x, int y) const {
 
     return static_cast<Entity>(pickedID);
 }
+

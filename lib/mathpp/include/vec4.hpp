@@ -11,7 +11,8 @@ namespace mathpp {
             switch (i) {
                 case 0: return x;
                 case 1: return y;
-                default: return z;
+                case 2: return z;
+                default: return w;
             }
         }
 
@@ -19,15 +20,20 @@ namespace mathpp {
             switch (i) {
                 case 0: return x;
                 case 1: return y;
-                default: return z;
+                case 2: return z;
+                default: return w;
             }
         }
     };
 
     template <typename T>
-    vec4<T> operator+(const vec4<T>& lhs, const vec4<T>& rhs) {return vec4(lhs.x+rhs.x,lhs.y+rhs.z,lhs.w+rhs.w); }
+    vec4<T> operator+(const vec4<T>& lhs, const vec4<T>& rhs) {
+        return vec4(lhs.x+rhs.x, lhs.y+rhs.y, lhs.z+rhs.z, lhs.w+rhs.w);
+    }
     template <typename T>
-    vec4<T> operator-(const vec4<T> & lhs, const vec4<T>& rhs) {return vec4(lhs.x-rhs.x,lhs.y-rhs.z,lhs.w-rhs.w); }
+    vec4<T> operator-(const vec4<T>& lhs, const vec4<T>& rhs) {
+        return vec4(lhs.x-rhs.x, lhs.y-rhs.y, lhs.z-rhs.z, lhs.w-rhs.w);
+    }
     template <typename T>
     vec4<T> operator*(const vec4<T>& lhs, const T &s){return vec4(lhs.x*s,lhs.y*s,lhs.z*s,lhs.w*s); }
     template <typename T>
