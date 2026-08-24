@@ -1,35 +1,74 @@
 #pragma once
 #include "mathpp.hpp"
-#include "../include/core/window/window.hpp"
-#include "../include/core/input/input.hpp"
 
-class OrbitCamera {
-public:
-    void Update(Input* input,const mathpp::vec3f& target);
-    [[nodiscard]] mathpp::mat4f GetViewMatrix() const;
-    [[nodiscard]] mathpp::vec3f GetViewTarget() const;
-    private:
-    mathpp::mat4f viewMatrix;
-    mathpp::vec3f target = {0.0f,0.0f,0.0f};
-    float distance = 5.0f;
-    float yaw = 0.0f;
-    float pitch = 0.0f;
-    float sens = 1.0f;
+class Input; // forward declare — only pointers/references used here
+
+enum class CameraType {
+    Free,
+    Orbit
 };
 
-class FreeCamera {
-    public:
-    void Update(Input* input,float deltaTime);
-    [[nodiscard]] mathpp::mat4f GetViewMatrix() const;
-    [[nodiscard]] mathpp::vec3f GetPosition() const;
-    [[nodiscard]] mathpp::vec3f GetViewTarget() const;
-    private:
+// Interface
+class ICamera {
+public:
+    virtual ~ICamera() = default;
+
+    virtual void Update(Input* input, float deltaTime, const mathpp::vec3f& target) = 0;
+    virtual mathpp::vec3f GetPosition() const = 0;
+    virtual mathpp::mat4f GetViewMatrix() const = 0;
+};
+
+// Free-fly camera
+class FreeCamera : public ICamera {
+public:
+    void Update(Input* input, float deltaTime, const mathpp::vec3f& target) override;
+    mathpp::vec3f GetPosition() const override;
+    mathpp::mat4f GetViewMatrix() const override;
+
+private:
+    mathpp::vec3f position;
+    mathpp::vec3f camFront;
     mathpp::mat4f viewMatrix;
-    mathpp:: vec3f position = {0.0f,0.0f,-4.0f};
-    mathpp::vec3f camFront = {0.0f,0.0f,0.0f};
-    float speed = 20.0f;
-    float sens = 0.5f;
+
+    float yaw = -90.0f;
+    float pitch = 0.0f;
+    float speed = 5.0f;
+    float sens = 0.1f;
+};
+
+//Orbit camera
+class OrbitCamera : public ICamera {
+public:
+    void Update(Input* input, float deltaTime, const mathpp::vec3f& target) override;
+    mathpp::vec3f GetPosition() const override;
+    mathpp::mat4f GetViewMatrix() const override;
+
+private:
+    mathpp::vec3f eye;
+    mathpp::vec3f target;
+    mathpp::mat4f viewMatrix;
+
     float yaw = 0.0f;
     float pitch = 0.0f;
+    float distance = 10.0f;
+    float sens = 0.1f;
+};
 
+// Owner / mode switcher
+class Camera {
+public:
+    Camera();
+
+    void Update(Input* input, float deltaTime, const mathpp::vec3f& target);
+    mathpp::vec3f GetPosition() const;
+    mathpp::mat4f GetViewMatrix() const;
+
+    void Switch();
+    CameraType GetType() const { return mode; }
+
+private:
+    FreeCamera freeCam;
+    OrbitCamera orbitCam;
+    ICamera* active;
+    CameraType mode;
 };

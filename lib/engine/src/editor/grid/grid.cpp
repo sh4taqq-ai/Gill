@@ -1,5 +1,5 @@
 // grid_renderer.cpp
-#include "../include/editor/grid/grid.hpp"
+#include "editor/grid/grid.hpp"
 #include "glad/gl.h"
 
 void GridRenderer::Init(float extent) {

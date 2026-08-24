@@ -1,13 +1,13 @@
-#include "../include/editor/gizmo/gizmo.hpp"
+#include "editor/gizmo/gizmo.hpp"
 #include "glad/gl.h"
+
 
 void Gizmo::Init(unsigned int width,unsigned int height) {
     wdth = width;
     hght = height;
     gizmoShader = std::make_unique<Shader>("asset/shader/gizmo/gizmoShader/gizmoVert.glsl", "asset/shader/gizmo/gizmoShader/gizmoFrag.glsl");
     gizmoShaderID = std::make_unique<Shader>("asset/shader/gizmo/gizmoShaderID/gizmoVertID.glsl","asset/shader/gizmo/gizmoShaderID/gizmoFragID.glsl");
-    coneMesh = std::make_unique<Mesh>(CreateCone(15,0.5,0.8));
-    cylinderMesh = std::make_unique<Mesh>(CreateCylinder(15,0.5,0.8));
+    AxisMesh = std::make_unique<Mesh>(LoadOBJ("asset/mesh/core/GizmoArrow.obj"));
 
     glGenFramebuffers(1,&pickFBO);
     glBindFramebuffer(GL_FRAMEBUFFER,pickFBO);
@@ -53,17 +53,11 @@ void Gizmo::DrawAxis(const mathpp::vec3f &gizmoPosition, const mathpp::mat4f &ax
 
     mathpp::mat4f shaftModel = mathpp::translate(identity, gizmoPosition);
     shaftModel = shaftModel * axisRotation;
-    shaftModel = mathpp::translate(shaftModel, {0.0f, shaftHeight * 0.5f * scale, 0.0f});
+    shaftModel = mathpp::translate(shaftModel, {0.0f, AxisHeight * 0.5f * scale, 0.0f});
     shaftModel = mathpp::scale(shaftModel, {scale, scale, scale});
     gizmoShaderID->setMat4f("model", shaftModel);
-    cylinderMesh->Draw();
+    AxisMesh->Draw();
 
-    mathpp::mat4f tipModel = mathpp::translate(identity, gizmoPosition);
-    tipModel = tipModel * axisRotation;
-    tipModel = mathpp::translate(tipModel, {0.0f, shaftHeight * scale, 0.0f}); // scale the offset directly
-    tipModel = mathpp::scale(tipModel, {scale, scale, scale});
-    gizmoShaderID->setMat4f("model", tipModel);
-    coneMesh->Draw();
 
 }
 
@@ -98,19 +92,13 @@ void Gizmo::DrawAxisID(const mathpp::vec3f &gizmoPosition, const mathpp::mat4f &
     gizmoShaderID->setInt("GizmoAxis",ID);
     mathpp::mat4f identity;
 
-    mathpp::mat4f shaftModel = mathpp::translate(identity, gizmoPosition);
-    shaftModel = shaftModel * axisRotation;
-    shaftModel = mathpp::translate(shaftModel, {0.0f, shaftHeight * 0.5f * scale, 0.0f});
-    shaftModel = mathpp::scale(shaftModel, {scale, scale, scale});
-    gizmoShader->setMat4f("model", shaftModel);
-    cylinderMesh->Draw();
+    mathpp::mat4f axisModel = mathpp::translate(identity, gizmoPosition);
+    axisModel = axisModel * axisRotation;
+    axisModel = mathpp::translate(axisModel, {0.0f, AxisHeight * 0.5f * scale, 0.0f});
+    axisModel = mathpp::scale(axisModel, {scale, scale, scale});
+    gizmoShader->setMat4f("model", axisModel);
+    AxisMesh->Draw();
 
-    mathpp::mat4f tipModel = mathpp::translate(identity, gizmoPosition);
-    tipModel = tipModel * axisRotation;
-    tipModel = mathpp::translate(tipModel, {0.0f, shaftHeight * scale, 0.0f}); // scale the offset directly
-    tipModel = mathpp::scale(tipModel, {scale, scale, scale});
-    gizmoShader->setMat4f("model", tipModel);
-    coneMesh->Draw();
 }
 
 GizmoAxis Gizmo::ReadAxisAt(int x, int y) const {

@@ -1,4 +1,4 @@
-#include "../include/render/mesh/mesh.hpp"
+#include "render/mesh/mesh.hpp"
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
 

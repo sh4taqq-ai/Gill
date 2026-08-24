@@ -1,1 +1,1 @@
-#include "../include/render/mesh/primitive.hpp"
+#include "render/mesh/primitive.hpp"

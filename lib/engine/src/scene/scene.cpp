@@ -1,4 +1,4 @@
-#include "../include/scene/scene.hpp"
+#include "scene/scene.hpp"
 
 
 

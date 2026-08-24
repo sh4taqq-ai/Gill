@@ -1,5 +1,6 @@
 add_library(engine STATIC
-src/core/engine/engine.cpp
+        src/editor/core/editor.cpp
+        src/core/engine/engine.cpp
         src/core/window/window.cpp
         src/component/transform.cpp
         src/render/mesh/mesh.cpp
@@ -14,6 +15,9 @@ src/core/engine/engine.cpp
         src/core/input/input.cpp
         src/core/component/camera/camera.cpp
         src/editor/grid/grid.cpp
+        src/core/system/asset/asset.cpp
+        src/editor/gizmo/gizmo.cpp
+        src/io/obj/obj.cpp
         include/core/engine/engine.hpp
         include/core/window/window.hpp
         include/component/transform.hpp
@@ -32,12 +36,15 @@ src/core/engine/engine.cpp
         include/core/component/camera/camera.hpp
         include/editor/grid/grid.hpp
         include/core/system/asset/asset.hpp
-        src/core/system/asset/asset.cpp
         include/component/sunlight.hpp
         include/editor/gizmo/gizmo.hpp
-        src/editor/gizmo/gizmo.cpp
+        include/io/obj/obj.hpp
+        include/editor/core/editor.hpp
+        include/core/input/delegate.hpp
+        src/core/input/delegate.cpp
+
 
 )
 
-target_link_libraries(engine PUBLIC glad glfw mathpp imgui)
+target_link_libraries(engine PUBLIC glad glfw mathpp imgui gill)
 target_include_directories(engine PUBLIC include)

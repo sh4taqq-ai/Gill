@@ -1,4 +1,4 @@
-#include "../../include/component/entity.hpp"
+#include "component/entity.hpp"
 
 #include <memory>
 

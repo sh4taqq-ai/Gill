@@ -24,7 +24,9 @@ add_subdirectory(lib/engine)
 
 
 
-add_executable(gill source/gill/main.cpp)
+add_executable(gill source/gill/main.cpp
+        source/gill/app.hpp
+        source/gill/app.cpp)
 
 
 

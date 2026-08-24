@@ -1,4 +1,4 @@
-#include "../include/core/component/raycast/raycast.hpp"
+#include "core/component/raycast/raycast.hpp"
 
 Ray ScreenToRay(float ndcX, float ndcY, const mathpp::mat4f &view, const mathpp::mat4f &projection) {
 

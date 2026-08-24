@@ -1,10 +1,9 @@
-#include "../include/core/input/input.hpp"
+#include "core/input/input.hpp"
 #include <iostream>
 
-void Input::Update(Window *window) {
-    window_ = window;
+void Input::Update() {
     double currentX,currentY;
-    glfwGetCursorPos(window->GetWindow(),&currentX,&currentY);
+    glfwGetCursorPos(window_->GetWindow(),&currentX,&currentY);
     if (firstUpdate) {
         lastMousePos  = {static_cast<float>(currentX),static_cast<float>(currentY)};
         firstUpdate = false;
@@ -32,4 +31,8 @@ mathpp::vec2f Input::GetMouseDelta() const {
 
 void Input::GetScroll(mathpp::vec2f &scroll) {
 
+}
+
+Input::Input(Window* window) {
+    window_ = window;
 }

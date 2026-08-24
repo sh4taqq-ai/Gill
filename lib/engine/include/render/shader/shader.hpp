@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 
-#include "mat4.hpp"
+#include "mathpp.hpp"
 
 class Shader {
 public:

@@ -1,6 +1,4 @@
 #pragma once
-#include <vector>
-
 #include "mat4.hpp"
 class Scene;
 

@@ -1,6 +1,6 @@
 #pragma once
-#include "../include/scene/scene.hpp"
-#include "../include/render/mesh/primitive.hpp"
+#include "scene/scene.hpp"
+#include "io/obj/obj.hpp"
 #include "mathpp.hpp"
 enum class GizmoAxis : int {
     None = 0,
@@ -21,8 +21,7 @@ private:
     void DrawAxis(const mathpp::vec3f& gizmoPosition, const mathpp::mat4f& axisRotation,
                 const mathpp::vec3f& color, float scale);
     void DrawAxisID(const mathpp::vec3f& gizmoPosition, const mathpp::mat4f& axisRotation, float scale, unsigned int ID);
-    std::unique_ptr<Mesh> cylinderMesh;
-    std::unique_ptr<Mesh> coneMesh;
+    std::unique_ptr<Mesh> AxisMesh;
     std::unique_ptr<Shader> gizmoShader;
     std::unique_ptr<Shader> gizmoShaderID;
     unsigned int pickFBO, pickTexture, pickDepthRenderBuffer;
@@ -30,8 +29,5 @@ private:
 
     float wdth,hght;
 
-    float shaftHeight = 1.5f;
-    float shaftRadius = 0.0005f;
-    float tipHeight = 0.3f;
-    float tipRadius = 0.012f;
+    float AxisHeight = 1.0f;
 };
