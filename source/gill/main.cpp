@@ -1,12 +1,11 @@
 #include <iostream>
-#include "../../lib/engine/include/core/engine/engine.hpp"
+#include "app.hpp"
 
 
 int main() {
-    Engine engine;
-    engine.Init(1920,1080,"my Engine");
-    engine.Run();
-
+App app;
+    app.Init(1920, 1080);
+    app.Run();
 
 
 

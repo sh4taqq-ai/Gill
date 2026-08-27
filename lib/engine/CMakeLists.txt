@@ -18,6 +18,7 @@ add_library(engine STATIC
         src/core/system/asset/asset.cpp
         src/editor/gizmo/gizmo.cpp
         src/io/obj/obj.cpp
+        src/core/component/event/event.cpp
         include/core/engine/engine.hpp
         include/core/window/window.hpp
         include/component/transform.hpp
@@ -40,8 +41,10 @@ add_library(engine STATIC
         include/editor/gizmo/gizmo.hpp
         include/io/obj/obj.hpp
         include/editor/core/editor.hpp
-        include/core/input/delegate.hpp
-        src/core/input/delegate.cpp
+        include/core/component/event/event.hpp
+        include/editor/gizmo/gizmoData.hpp
+        include/editor/gizmo/gizmoController.hpp
+        src/editor/gizmo/gizmoController.cpp
 
 
 )

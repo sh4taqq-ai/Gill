@@ -1,14 +1,17 @@
 #pragma once
 #include <unordered_map>
-#include "../component/entity.hpp"
-#include "../component/transform.hpp"
-#include "../component/mesh.hpp"
-#include "../component/sunlight.hpp"
-#include "../core/component/raycast/raycast.hpp"
-#include "../include/core/system/asset/asset.hpp"
+#include "component/entity.hpp"
+#include "component/transform.hpp"
+#include "component/mesh.hpp"
+#include "component/sunlight.hpp"
+
+#include "core/system/asset/asset.hpp"
 #include <optional>
 class Scene {
 public:
+
+    Scene() = default;
+    ~Scene();
 
 
     Entity CreateEntity();
@@ -66,12 +69,14 @@ T* GetComponent(Entity entity) {
     const Mesh* GetMesh(AssetID id) const;
     const Shader* GetShader(AssetID id) const;
 
-    std::optional<Entity> SelectEntity(const Ray&  ray,float radius) const;
 
 
     std::optional<Entity> GetSelected() const;
     void SetSelected(const std::optional<Entity>& value);
 
+    std::vector<Entity> GetLivingEntities() const;
+
+    uint32_t GetEntityCount();
 
 
     private:

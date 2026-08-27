@@ -1,4 +1,5 @@
 #include "editor/ui/ui.hpp"
+#include <cstdint>
 
 
 
@@ -8,9 +9,9 @@
 
 void UIManager::Init(Window* window,uint32_t shaderID) {
     ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO();
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;  // Enable Gamepad Controls
+    io_ptr = &ImGui::GetIO();
+    io_ptr->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+    io_ptr->ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;  // Enable Gamepad Controls
     ImGui_ImplOpenGL3_Init("#version 330");
     ImGui_ImplGlfw_InitForOpenGL(window->GetWindow(),true);
     defaultShaderID = shaderID;
@@ -30,7 +31,7 @@ void UIManager::EndFrame() {
 void UIManager::RenderProperties(Scene* scene) {
     ImGui::SetNextWindowSize(ImVec2(500, 600), ImGuiCond_Once);
     ImGui::SetNextWindowPos(
-    ImVec2(1,30 ),
+    ImVec2(1,60 ),
     ImGuiCond_Always
 );
     ImGui::Begin("Properties",nullptr,ImGuiWindowFlags_NoMove);
@@ -126,3 +127,29 @@ void UIManager::AddSunlight(Scene* scene) {
     scene->AddSunlight(entity, sunComp);
 }
 
+bool UIManager::WantCaptureMouse() {
+    return io_ptr->WantCaptureMouse==true;
+}
+
+void UIManager::RenderHierarchy(Scene *scene) {
+    ImGui::SetNextWindowSize(ImVec2(500, 600), ImGuiCond_Once);
+    ImGui::SetNextWindowPos(ImVec2(50, 50), ImGuiCond_Once); // reasonable on-screen default, once
+    std::vector<uint32_t> livingEntities = scene->GetLivingEntities();
+    if (ImGui::BeginListBox("Hierarchy")) {
+        for (uint32_t i = 0; i < livingEntities.size(); i++) {
+            std::optional<Entity> selected = scene->GetSelected();
+            const bool is_selected = selected.has_value() && (selected.value() == livingEntities[i]);
+            std::string label = "Entity" + std::to_string(livingEntities[i]);
+            if (ImGui::Selectable(label.c_str(), is_selected))
+            {
+               scene->SetSelected(livingEntities[i]);
+            }
+
+            if (is_selected)
+            {
+                ImGui::SetItemDefaultFocus();
+            }
+        }
+        ImGui::EndListBox();
+    }
+}

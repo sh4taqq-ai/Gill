@@ -13,6 +13,8 @@ class Input;
 
 class App {
 public:
+    App();
+    ~App();
     void Init(unsigned int width, unsigned int height);
     void Run();
     void Shutdown();

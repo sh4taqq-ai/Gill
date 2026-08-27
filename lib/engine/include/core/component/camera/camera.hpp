@@ -58,6 +58,7 @@ private:
 class Camera {
 public:
     Camera();
+    ~Camera();
 
     void Update(Input* input, float deltaTime, const mathpp::vec3f& target);
     mathpp::vec3f GetPosition() const;

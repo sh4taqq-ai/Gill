@@ -20,6 +20,8 @@ void FreeCamera::Update(Input* input, float deltaTime, const mathpp::vec3f& /*ta
     camFront = mathpp::normalize(front);
 
     if (input->IsMouseButtonDown(GLFW_MOUSE_BUTTON_MIDDLE)) {
+        input->SetCursorMode(2);
+
         if (input->IsKeyDown(GLFW_KEY_W))
             position += camFront * speed * deltaTime;
         if (input->IsKeyDown(GLFW_KEY_S))
@@ -33,6 +35,7 @@ void FreeCamera::Update(Input* input, float deltaTime, const mathpp::vec3f& /*ta
         if (input->IsKeyDown(GLFW_KEY_LEFT_SHIFT))
             position += mathpp::normalize(mathpp::cross(camFront, {0.0f, 0.0f, 1.0f})) * speed * deltaTime;
     }
+    else {input->SetCursorMode(0);}
 
     viewMatrix = mathpp::look_at(position, camFront + position, {0.0f, 1.0f, 0.0f});
 }
@@ -44,6 +47,7 @@ mathpp::vec3f FreeCamera::GetPosition() const {
 mathpp::mat4f FreeCamera::GetViewMatrix() const {
     return viewMatrix;
 }
+
 
 //  OrbitCamera
 
@@ -100,3 +104,4 @@ void Camera::Switch() {
         active = &freeCam;
     }
 }
+Camera::~Camera() = default;

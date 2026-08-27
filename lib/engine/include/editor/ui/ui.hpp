@@ -10,12 +10,13 @@
 
 class UIManager {
 public:
-    UIManager() = default;
     void Init(Window* window,uint32_t shaderID);
     void BeginFrame();
     void EndFrame();
     void RenderProperties(Scene* scene);
     void RenderAddMenu(Scene* scene);
+    void RenderHierarchy(Scene* scene);
+    bool WantCaptureMouse();
     void Shutdown();
 
 private:
@@ -23,5 +24,6 @@ private:
     uint32_t defaultShaderID;
     void AddPrimitive(Scene* scene, PrimitiveType type);
     void AddSunlight(Scene* scene);
+    ImGuiIO* io_ptr;
 
 };

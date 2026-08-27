@@ -16,6 +16,7 @@ Entity EntityManager::CreateEntity()   {
 
     // Take an ID from the front of the queue
     Entity id = mAvailableEntities.front();
+    mEntities.push_back(id);
     mAvailableEntities.pop();
     ++mLivingEntityCount;
 
@@ -25,7 +26,10 @@ Entity EntityManager::CreateEntity()   {
 void EntityManager::DestroyEntity(Entity entity)
 {
     assert(entity < MAX_ENTITIES && "Entity out of range.");
-
+    auto it = std::find(mEntities.begin(), mEntities.end(), entity);
+    if (it != mEntities.end()) {
+        mEntities.erase(it);
+    }
 
     // Put the destroyed ID at the back of the queue
     mAvailableEntities.push(entity);
@@ -33,3 +37,10 @@ void EntityManager::DestroyEntity(Entity entity)
 }
 
 
+uint32_t EntityManager::GetEntityCount() {
+    return mLivingEntityCount;
+}
+
+std::vector<Entity> EntityManager::GetLivingEntity() const {
+    return mEntities;
+}

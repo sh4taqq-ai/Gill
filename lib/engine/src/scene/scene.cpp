@@ -11,8 +11,7 @@ void Scene::DestroyEntity(Entity entity) {
     entityManager.DestroyEntity(entity);
 }
 
-
-
+Scene::~Scene() = default;
 
 
 const Mesh *Scene::GetMesh(AssetID id) const {
@@ -43,15 +42,7 @@ void Scene::AddSunlight(Entity entity, const SunlightComponent &sun) {
     sunlights.insert({entity, sun});
 }
 
-std::optional<Entity> Scene::SelectEntity(const Ray& ray, float radius) const {
-    for (const auto& [entity, meshComp] : meshes) {           // loop over ENTITIES
-        const TransformComponent* t = GetComponent<TransformComponent>(entity);
-        if (t && RaySphereIntersect(ray, t->position, radius)) {  // ONE check per entity, no inner loop
-            return entity;  // found a hit
-        }
-    }
-    return std::nullopt;
-}
+
 
 
 std::optional<Entity> Scene::GetSelected() const {
@@ -66,3 +57,10 @@ const std::unordered_map<Entity, SunlightComponent> &Scene::GetAllSunlights() co
     return  sunlights;
 }
 
+uint32_t Scene::GetEntityCount() {
+    return entityManager.GetEntityCount();
+}
+
+std::vector<Entity> Scene::GetLivingEntities() const {
+    return entityManager.GetLivingEntity();
+}
