@@ -1,7 +1,7 @@
 #pragma once
 #include "mathpp.hpp"
 
-class Input; // forward declare — only pointers/references used here
+class Input;
 
 enum class CameraType {
     Free,

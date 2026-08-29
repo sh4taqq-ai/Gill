@@ -14,10 +14,11 @@ add_library(engine STATIC
         src/core/input/input.cpp
         src/core/component/camera/camera.cpp
         src/editor/grid/grid.cpp
-        src/core/system/asset/asset.cpp
         src/editor/gizmo/gizmo.cpp
         src/io/obj/obj.cpp
         src/core/component/event/event.cpp
+        src/editor/gizmo/gizmoController.cpp
+        src/core/system/hierarchy/hierarchy.cpp
         include/core/engine/engine.hpp
         include/core/window/window.hpp
         include/component/transform.hpp
@@ -43,12 +44,9 @@ add_library(engine STATIC
         include/core/component/event/event.hpp
         include/editor/gizmo/gizmoData.hpp
         include/editor/gizmo/gizmoController.hpp
-        src/editor/gizmo/gizmoController.cpp
         include/component/parent.hpp
         include/core/set/sparseset.hpp
-        src/core/set/sparseset.cpp
         include/core/system/hierarchy/hierarchy.hpp
-        src/core/system/hierarchy/hierarchy.cpp
         include/component/children.hpp
 
 

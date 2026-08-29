@@ -1,8 +1,9 @@
 #pragma once
 #include <string>
 #include <memory>
-#include "render/core/renderer.hpp"
+#include "mathpp.hpp"
 
+class Renderer ;
 class Camera;
 class Scene;
 
@@ -10,7 +11,7 @@ class Scene;
 class Engine {
 
 public:
-    Engine(const mathpp::mat4f& projection) : proj(const_cast<mathpp::mat4f&>(projection)) {}
+    Engine(const mathpp::mat4f& projection);
     ~Engine();
     void Init(unsigned int width, unsigned int height,Camera* cam,Scene* scene);
     void Run();
@@ -18,7 +19,7 @@ public:
 
 private:
     unsigned int wdth,hght;
-    Renderer renderer;
+    std::unique_ptr<Renderer> renderer;
     Camera* _cam;
     Scene* _scene;
     mathpp::mat4f& proj;

@@ -1,6 +1,7 @@
 #include "editor/gizmo/gizmo.hpp"
 #include "glad/gl.h"
 #include "core/input/input.hpp"
+#include "io/obj/obj.hpp"
 
 
 void Gizmo::Init(unsigned int width,unsigned int height) {

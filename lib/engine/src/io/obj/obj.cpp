@@ -1,5 +1,7 @@
 #include "io/obj/obj.hpp"
+#include "mathpp.hpp"
 #include "render/mesh/mesh.hpp"
+#include "render/data/vertex.hpp"
 #include <string>
 #include <unordered_map>
 #include <fstream>

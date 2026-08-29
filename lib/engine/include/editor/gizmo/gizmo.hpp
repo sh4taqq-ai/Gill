@@ -1,6 +1,5 @@
 #pragma once
 #include "scene/scene.hpp"
-#include "io/obj/obj.hpp"
 #include "mathpp.hpp"
 #include "gizmoData.hpp"
 

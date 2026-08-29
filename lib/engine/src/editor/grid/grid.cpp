@@ -1,6 +1,7 @@
-// grid_renderer.cpp
 #include "editor/grid/grid.hpp"
 #include "glad/gl.h"
+#include "render/mesh/primitive.hpp"
+#include "render/shader/shader.hpp"
 
 void GridRenderer::Init(float extent) {
     gridMesh = CreateGridPlane(extent);

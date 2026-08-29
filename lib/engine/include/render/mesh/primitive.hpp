@@ -1,6 +1,7 @@
 #pragma once
 #include <memory>
 #include "mesh.hpp"
+#include "render/data/vertex.hpp"
 
 enum class PrimitiveType {
     Cube,

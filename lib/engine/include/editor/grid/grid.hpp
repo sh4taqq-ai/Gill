@@ -1,8 +1,9 @@
 #pragma once
 #include "mathpp.hpp"
 #include <memory>
-#include "render/mesh/primitive.hpp"
-#include "render/shader/shader.hpp"
+
+class Mesh;
+class Shader;
 
 class GridRenderer {
 public:

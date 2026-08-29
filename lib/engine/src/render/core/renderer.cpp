@@ -29,3 +29,5 @@ void Renderer::DrawEntity(const Scene* scene, Entity entity, const MeshComponent
 
     mesh->Draw();
 }
+
+Renderer::~Renderer() = default;

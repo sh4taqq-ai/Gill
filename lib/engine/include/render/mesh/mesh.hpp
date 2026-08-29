@@ -1,6 +1,8 @@
 #pragma once
 #include <vector>
-#include "../data/vertex.hpp"
+
+
+struct Vertex;
 
 
 class Mesh {

@@ -1,6 +1,5 @@
 #pragma once
 #include "mathpp.hpp"
-#include <optional>
 
 struct Vertex {
     mathpp::vec3f position;

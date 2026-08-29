@@ -17,6 +17,7 @@ Entity Hierarchy::GetParent(Entity child) {
     if (parents.Has(child)) {
         return parents.Get(child).parentEntity;
     }
+    return {};
 }
 
 void Hierarchy::InsertChild(Entity parent, Entity child) {
