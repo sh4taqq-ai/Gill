@@ -14,6 +14,7 @@ class Window;
 class Scene;
 class Selector;
 class Camera;
+class Hierarchy;
 
 using MouseEvent = EventDelegate<int,int>;
 
@@ -38,6 +39,7 @@ private:
     std::unique_ptr<UIManager> ui;
     std::unique_ptr<Selector> selector;
     std::unique_ptr<GizmoController> gizmoController;
+    std::unique_ptr<Hierarchy> hierarchy;
     Camera* _camera;
     Scene* _scene;
     Window* _window;

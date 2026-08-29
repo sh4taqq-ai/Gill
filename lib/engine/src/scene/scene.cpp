@@ -22,25 +22,6 @@ const Shader *Scene::GetShader(AssetID id) const {
     return shaderManager.Get(id);
 }
 
-const std::unordered_map<Entity, MeshComponent>& Scene::GetAllMeshes() const {
-    return meshes;
-}
-
-const std::unordered_map<Entity, TransformComponent>& Scene::GetAllTransforms() const {
-    return transforms;
-}
-
-void Scene::AddTransform(Entity entity, const TransformComponent& transform) {
-    transforms.insert({entity, transform});
-}
-
-void Scene::AddMesh(Entity entity, const MeshComponent &mesh) {
-    meshes.insert({entity, mesh});
-}
-
-void Scene::AddSunlight(Entity entity, const SunlightComponent &sun) {
-    sunlights.insert({entity, sun});
-}
 
 
 
@@ -53,9 +34,6 @@ void Scene::SetSelected(const std::optional<Entity> &value) {
     selected = value;
 }
 
-const std::unordered_map<Entity, SunlightComponent> &Scene::GetAllSunlights() const {
-    return  sunlights;
-}
 
 uint32_t Scene::GetEntityCount() {
     return entityManager.GetEntityCount();

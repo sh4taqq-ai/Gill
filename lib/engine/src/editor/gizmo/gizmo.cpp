@@ -81,7 +81,7 @@ void Gizmo::RenderIDs(const mathpp::mat4f &view, const mathpp::mat4f &projection
     glDisable(GL_DEPTH_TEST);
 
     float distance = mathpp::length(cameraPos - gizmoPosition);
-    float scale = distance * 0.15f;
+    float scale = distance * 0.08f;
 
     mathpp::mat4f rotY = mathpp::EulerAnglesRotation<float>({0.0f, 0.0f, 0.0f});   // Y arrow: native
     mathpp::mat4f rotX = mathpp::EulerAnglesRotation<float>({0.0f, 0.0f, -90.0f}); // X arrow

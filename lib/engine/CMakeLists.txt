@@ -2,7 +2,6 @@ add_library(engine STATIC
         src/editor/core/editor.cpp
         src/core/engine/engine.cpp
         src/core/window/window.cpp
-        src/component/transform.cpp
         src/render/mesh/mesh.cpp
         src/render/shader/shader.cpp
         src/scene/scene.cpp
@@ -45,6 +44,12 @@ add_library(engine STATIC
         include/editor/gizmo/gizmoData.hpp
         include/editor/gizmo/gizmoController.hpp
         src/editor/gizmo/gizmoController.cpp
+        include/component/parent.hpp
+        include/core/set/sparseset.hpp
+        src/core/set/sparseset.cpp
+        include/core/system/hierarchy/hierarchy.hpp
+        src/core/system/hierarchy/hierarchy.cpp
+        include/component/children.hpp
 
 
 )

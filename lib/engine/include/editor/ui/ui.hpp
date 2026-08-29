@@ -1,11 +1,11 @@
 #pragma once
-#include "core/window/window.hpp"
-#include "scene/scene.hpp"
 #include "imgui.h"
-#include "imgui_impl_glfw.h"
-#include "imgui_impl_opengl3.h"
-#include <cstdint>
+#include "component/entity.hpp"
 #include "render/mesh/primitive.hpp"
+
+class Scene;
+class Window;
+class Hierarchy;
 
 
 class UIManager {
@@ -15,15 +15,18 @@ public:
     void EndFrame();
     void RenderProperties(Scene* scene);
     void RenderAddMenu(Scene* scene);
-    void RenderHierarchy(Scene* scene);
+    void RenderHierarchy(Scene* scene,Hierarchy* hierarchy);
     bool WantCaptureMouse();
     void Shutdown();
 
 private:
 
+
+
     uint32_t defaultShaderID;
     void AddPrimitive(Scene* scene, PrimitiveType type);
     void AddSunlight(Scene* scene);
+    void DrawEntityNode(Scene* scene, Entity entity,Hierarchy* hierarchy);
     ImGuiIO* io_ptr;
 
 };

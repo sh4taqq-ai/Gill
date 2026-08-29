@@ -1,4 +1,6 @@
 #include "editor/selector/selector.hpp"
+#include "render/shader/shader.hpp"
+#include "scene/scene.hpp"
 
 
 
@@ -23,24 +25,15 @@ void Selector::Init(unsigned int width, unsigned int height) {
 
 
 
-void Selector::RenderScene(Scene* scene, const mathpp::mat4f& view, const mathpp::mat4f& projection) {
+void Selector::RenderScene(const Scene* scene, const mathpp::mat4f& view, const mathpp::mat4f& projection) {
     GLint clearValue = -1;
     glBindFramebuffer(GL_FRAMEBUFFER, FBO);
     glClearBufferiv(GL_COLOR, 0, &clearValue);
     glClear(GL_DEPTH_BUFFER_BIT);
     selectShader->Use();
-
-    const auto& meshes = scene->GetAllMeshes();
-    for (const auto& [entity, meshComp] : meshes) {
-        const auto* transform = scene->GetComponent<TransformComponent>(entity);
-        if (!transform) continue;
-
-        selectShader->setMat4f("model", transform->getMatrix());
-        selectShader->setMat4f("view", view);
-        selectShader->setMat4f("projection", projection);
-        selectShader->setInt("ObjectID", static_cast<int>(entity));
-        scene->GetMesh(meshComp.meshID)->Draw();
-    }
+    scene->ForEach<MeshComponent>([this, scene, &view, &projection](Entity entity,const MeshComponent& meshComp) {
+       RenderEntityID(scene, entity, meshComp, view, projection);
+   });
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
@@ -59,3 +52,14 @@ std::optional<Entity> Selector::ReadEntityAt(int x, int y) const {
     return static_cast<Entity>(pickedID);
 }
 
+void Selector::RenderEntityID(const Scene *scene,Entity entity, const MeshComponent &meshComp, const mathpp::mat4f &view, const mathpp::mat4f &projection) {
+    auto& transform = scene->GetComponent<TransformComponent>(entity);
+    auto mesh = scene->GetMesh(meshComp.meshID);
+    selectShader->setMat4f("model", transform.getMatrix());
+    selectShader->setMat4f("view", view);
+    selectShader->setMat4f("projection", projection);
+    selectShader->setInt("ObjectID", static_cast<int>(entity));
+    mesh->Draw();
+
+
+}

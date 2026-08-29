@@ -2,17 +2,27 @@
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
 #include <memory>
-#include "render/shader/shader.hpp"
-#include "scene/scene.hpp"
+#include <optional>
+#include "mathpp.hpp"
+#include <cstdint>
+
+using Entity = uint32_t;
+
+class Shader;
+class Scene;
+
+struct MeshComponent;
 
 
 class Selector {
     public:
     Selector() = default;
     void Init(unsigned int width, unsigned int height);
-    void RenderScene(Scene* scene,const mathpp::mat4f& view,const mathpp::mat4f& projection);
+    void RenderScene(const Scene* scene,const mathpp::mat4f& view,const mathpp::mat4f& projection);
     std::optional<Entity> ReadEntityAt(int x, int y) const;
+
 private:
+    void RenderEntityID(const Scene* scene,Entity entity, const MeshComponent& meshComp,const mathpp::mat4f& view, const mathpp::mat4f& projection);
     unsigned int wdth,hght;
     unsigned int FBO;
     unsigned int Texture;
