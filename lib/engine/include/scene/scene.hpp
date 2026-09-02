@@ -6,7 +6,6 @@
 #include "component/sunlight.hpp"
 #include <functional>
 #include "core/set/sparseset.hpp"
-
 #include "core/system/asset/asset.hpp"
 #include <optional>
 class Scene {
@@ -78,20 +77,13 @@ T* TryGetComponent(Entity entity);
     EntityManager entityManager;
     AssetManager<Mesh> meshManager;
     AssetManager<Shader> shaderManager;
-    SparseSet<TransformComponent> transforms;
     SparseSet<MeshComponent> meshes;
     SparseSet<SunlightComponent> sunlights;
 };
 
-  template<>
-    inline TransformComponent& Scene::GetComponent<TransformComponent>(Entity entity) {
-        return transforms.Get(entity);
-    }
 
-    template<>
-    inline const TransformComponent& Scene::GetComponent<TransformComponent>(Entity entity) const {
-        return transforms.Get(entity);
-    }
+
+
     template<>
     inline SunlightComponent& Scene::GetComponent<SunlightComponent>(Entity entity) {
         return sunlights.Get(entity);
@@ -124,20 +116,6 @@ T* TryGetComponent(Entity entity);
         return nullptr;
     }
     template<>
-    inline TransformComponent* Scene::TryGetComponent<TransformComponent>(Entity entity) {
-        if (transforms.Has(entity)) {
-            return &transforms.Get(entity);
-        }
-        return nullptr;
-    }
-    template<>
-    inline const TransformComponent* Scene::TryGetComponent<TransformComponent>(Entity entity) const {
-        if (transforms.Has(entity)) {
-            return &transforms.Get(entity);
-        }
-        return nullptr;
-    }
-    template<>
     inline SunlightComponent* Scene::TryGetComponent<SunlightComponent>(Entity entity) {
         if (sunlights.Has(entity)) {
             return &sunlights.Get(entity);
@@ -150,15 +128,6 @@ T* TryGetComponent(Entity entity);
             return &sunlights.Get(entity);
         }
         return nullptr;
-    }
-
-    template<>
-    inline void Scene::InsertComponent<TransformComponent>(Entity entity,const TransformComponent& component) {
-        transforms.Insert(entity, component);
-    }
-    template<>
-    inline void Scene::RemoveComponent<TransformComponent>(Entity entity) {
-        transforms.Remove(entity);
     }
     template<>
     inline void Scene::InsertComponent<MeshComponent>(Entity entity,const MeshComponent& component) {
@@ -175,14 +144,6 @@ T* TryGetComponent(Entity entity);
     template<>
     inline void Scene::RemoveComponent<SunlightComponent>(Entity entity) {
         sunlights.Remove(entity);
-    }
-
-
-    template<>
-    inline void Scene::ForEach<TransformComponent>(std::function<void(Entity entity,const  TransformComponent& component)> func) const{
-        for (size_t it = 0; it<transforms.Size();it++) {
-            func(transforms.GetEntity(it), transforms[it]);
-        }
     }
 
     template<>

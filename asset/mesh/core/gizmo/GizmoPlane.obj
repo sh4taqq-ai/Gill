@@ -1,7 +1,7 @@
 # Blender 3.3.9
 # www.blender.org
 mtllib GizmoPlane.mtl
-o GizmoTranslate.001
+o GizmoPlane
 v -0.583921 0.125571 0.000000
 v -0.217885 0.125571 0.000000
 v -0.583921 0.491608 0.000000

@@ -2,15 +2,18 @@
 #include "glad/gl.h"
 #include "core/input/input.hpp"
 #include "io/obj/obj.hpp"
+#include "scene/scene.hpp"
+#include "render/shader/shader.hpp"
 
 
-void Gizmo::Init(unsigned int width,unsigned int height) {
+void Gizmo::Init(unsigned int width,unsigned int height,GizmoData* gizmoData) {
     wdth = width;
     hght = height;
+    _gizmoData = gizmoData;
     gizmoShader = std::make_unique<Shader>("asset/shader/gizmo/gizmoShader/gizmoVert.glsl", "asset/shader/gizmo/gizmoShader/gizmoFrag.glsl");
     gizmoShaderID = std::make_unique<Shader>("asset/shader/gizmo/gizmoShaderID/gizmoVertID.glsl","asset/shader/gizmo/gizmoShaderID/gizmoFragID.glsl");
     translateMesh = std::make_unique<Mesh>(LoadOBJ("asset/mesh/core/gizmo/GizmoTranslate.obj"));
-    rotateMesh = std::make_unique<Mesh>(LoadOBJ("asset/mesh/core/gizmo/GizmoRotation.obj"));
+    rotateMesh = std::make_unique<Mesh>(LoadOBJ("asset/mesh/core/gizmo/GizmoRotate.obj"));
     scaleMesh = std::make_unique<Mesh>(LoadOBJ("asset/mesh/core/gizmo/GizmoScale.obj"));
     planeMesh = std::make_unique<Mesh>(LoadOBJ("asset/mesh/core/gizmo/GizmoPlane.obj"));
     glGenFramebuffers(1,&pickFBO);
@@ -36,10 +39,20 @@ void Gizmo::Render(Scene* scene,const mathpp::mat4f& view, const mathpp::mat4f& 
 
     float distance = mathpp::length(cameraPos - gizmoPosition);
     float scale = distance * 0.08f;
+    mathpp::mat4f rotY;
+    mathpp::mat4f rotX;
+    mathpp::mat4f rotZ;
 
-    mathpp::mat4f rotY = mathpp::EulerAnglesRotation<float>({0.0f, 0.0f, 0.0f});   // Y arrow: native
-    mathpp::mat4f rotX = mathpp::EulerAnglesRotation<float>({0.0f, 0.0f, -90.0f}); // X arrow
-    mathpp::mat4f rotZ = mathpp::EulerAnglesRotation<float>({90.0f, 0.0f, 0.0f});  // Z arrow
+    if (_gizmoData->mode != GizmoMode::Rotate) {
+         rotY = mathpp::EulerAnglesRotation<float>({0.0f, 90.0f, 0.0f});   // Y arrow: native
+         rotX = mathpp::EulerAnglesRotation<float>({0.0f, 0.0f, -90.0f}); // X arrow
+         rotZ = mathpp::EulerAnglesRotation<float>({90.0f, 0.0f, 0.0f});  // Z arrow
+    }
+    else {
+        rotZ = mathpp::EulerAnglesRotation<float>({0.0f, 90.0f, 0.0f});
+        rotY = mathpp::EulerAnglesRotation<float>({0.0f, 0.0f, -90.0f});
+        rotX = mathpp::EulerAnglesRotation<float>({90.0f, 0.0f, 0.0f});
+    }
 
     mathpp::vec3f xColor = (highlightedAxis == GizmoAxis::X) ? mathpp::vec3f(1.0f,1.0f,0.0f) : mathpp::vec3f(0.8f,0.0f,0.0f);
     DrawAxis(gizmoPosition, rotX, xColor, scale);
@@ -59,13 +72,21 @@ void Gizmo::DrawAxis(const mathpp::vec3f &gizmoPosition, const mathpp::mat4f &ax
     gizmoShader->setVec3f("axisColor", color);
     mathpp::mat4f identity;
     Mesh* drawMesh = nullptr;
-    if (_state == GizmoState::Translate){drawMesh = translateMesh.get();}
-    else if (_state == GizmoState::Rotate){drawMesh = rotateMesh.get();}
-    else if (_state == GizmoState::Scale){drawMesh = scaleMesh.get();}
+    if (_gizmoData->mode == GizmoMode::Translate){drawMesh = translateMesh.get();}
+    else if (_gizmoData->mode == GizmoMode::Rotate){drawMesh = rotateMesh.get();}
+    else if (_gizmoData->mode == GizmoMode::Scale){drawMesh = scaleMesh.get();}
     mathpp::mat4f meshModel = mathpp::translate(identity, gizmoPosition);
     meshModel = meshModel * axisRotation;
+    if (_gizmoData->mode != GizmoMode::Rotate)
+    {
     meshModel = mathpp::translate(meshModel, {0.0f, AxisHeight * 0.4f * scale, 0.0f});
-    meshModel = mathpp::scale(meshModel, {scale, scale, scale});
+        meshModel = meshModel = mathpp::scale(meshModel, {scale, scale, scale});
+
+    }
+    else{
+        meshModel = meshModel = mathpp::scale(meshModel, {scale, scale, scale});
+    }
+
     gizmoShaderID->setMat4f("model", meshModel);
     drawMesh->Draw();
 }
@@ -84,9 +105,20 @@ void Gizmo::RenderIDs(const mathpp::mat4f &view, const mathpp::mat4f &projection
     float distance = mathpp::length(cameraPos - gizmoPosition);
     float scale = distance * 0.08f;
 
-    mathpp::mat4f rotY = mathpp::EulerAnglesRotation<float>({0.0f, 0.0f, 0.0f});   // Y arrow: native
-    mathpp::mat4f rotX = mathpp::EulerAnglesRotation<float>({0.0f, 0.0f, -90.0f}); // X arrow
-    mathpp::mat4f rotZ = mathpp::EulerAnglesRotation<float>({90.0f, 0.0f, 0.0f});  // Z arrow
+    mathpp::mat4f rotY;
+    mathpp::mat4f rotX;
+    mathpp::mat4f rotZ;
+
+    if (_gizmoData->mode != GizmoMode::Rotate) {
+        rotY = mathpp::EulerAnglesRotation<float>({0.0f, 90.0f, 0.0f});   // Y arrow: native
+        rotX = mathpp::EulerAnglesRotation<float>({0.0f, 0.0f, -90.0f}); // X arrow
+        rotZ = mathpp::EulerAnglesRotation<float>({90.0f, 0.0f, 0.0f});  // Z arrow
+    }
+    else {
+        rotZ = mathpp::EulerAnglesRotation<float>({0.0f, 90.0f, 0.0f});
+        rotY = mathpp::EulerAnglesRotation<float>({0.0f, 0.0f, -90.0f});
+        rotX = mathpp::EulerAnglesRotation<float>({90.0f, 0.0f, 0.0f});
+    }
 
     DrawAxisID(gizmoPosition, rotX, scale,static_cast<int>(GizmoAxis::X));
     DrawAxisID(gizmoPosition, rotY,  scale,static_cast<int>(GizmoAxis::Y));
@@ -101,15 +133,22 @@ void Gizmo::DrawAxisID(const mathpp::vec3f &gizmoPosition, const mathpp::mat4f &
     gizmoShaderID->setInt("GizmoAxis",ID);
     mathpp::mat4f identity;
     Mesh* drawMesh = nullptr;
-    if (_state == GizmoState::Translate){drawMesh = translateMesh.get();}
-    else if (_state == GizmoState::Rotate){drawMesh = rotateMesh.get();}
-    else if (_state == GizmoState::Scale){drawMesh = scaleMesh.get();}
+    if (_gizmoData->mode == GizmoMode::Translate){drawMesh = translateMesh.get();}
+    else if (_gizmoData->mode == GizmoMode::Rotate){drawMesh = rotateMesh.get();}
+    else if (_gizmoData->mode == GizmoMode::Scale){drawMesh = scaleMesh.get();}
     mathpp::mat4f axisModel = mathpp::translate(identity, gizmoPosition);
     axisModel = axisModel * axisRotation;
-    axisModel = mathpp::translate(axisModel, {0.0f, AxisHeight * 0.4f * scale, 0.0f});
-    axisModel = mathpp::scale(axisModel, {scale, scale, scale});
-    gizmoShader->setMat4f("model", axisModel);
-    translateMesh->Draw();
+    if (_gizmoData->mode != GizmoMode::Rotate)
+    {
+        axisModel = mathpp::translate(axisModel, {0.0f, AxisHeight * 0.4f * scale, 0.0f});
+        axisModel = axisModel = mathpp::scale(axisModel, {scale, scale, scale});
+
+    }
+    else{
+        axisModel = axisModel = mathpp::scale(axisModel, {scale, scale, scale});
+    }
+    gizmoShaderID->setMat4f("model", axisModel);
+    drawMesh->Draw();
 
 }
 
@@ -124,11 +163,6 @@ GizmoAxis Gizmo::ReadAxisAt(int x, int y) const {
 }
 
 
-void Gizmo::Switch() {
-    if (_state == GizmoState::Translate) { _state = GizmoState::Rotate; }
-    else if (_state == GizmoState::Rotate) { _state = GizmoState::Scale; }
-    else { _state = GizmoState::Translate; }
-}
 
 void Gizmo::UpdateHighlight(int x, int y, GizmoAxis dragAxis, bool isDragging)  {
     if (isDragging) {
@@ -138,4 +172,5 @@ void Gizmo::UpdateHighlight(int x, int y, GizmoAxis dragAxis, bool isDragging)  
         highlightedAxis = ReadAxisAt(x,y);
     }
 }
+Gizmo::~Gizmo() = default;
 

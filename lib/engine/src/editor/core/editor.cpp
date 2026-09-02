@@ -1,5 +1,6 @@
 #include "editor/core/editor.hpp"
 #include "editor/selector/selector.hpp"
+#include "render/shader/shader.hpp"
 #include "editor/grid/grid.hpp"
 #include "core/input/input.hpp"
 #include "editor/ui/ui.hpp"
@@ -7,11 +8,12 @@
 #include "core/system/asset/asset.hpp"
 #include "core/system/hierarchy/hierarchy.hpp"
 #include "editor/gizmo/gizmoController.hpp"
-#include "core/system/hierarchy/hierarchy.hpp"
+#include "core/system/transform/transform.hpp"
+#include "scene/scene.hpp"
 
 
 
-void Editor::Init(float Width, float Height,Window* window,Scene* scene,const mathpp::mat4f& projection, Camera* camera) {
+void Editor::Init(float Width, float Height,Window* window,Scene* scene,const mathpp::mat4f& projection, Camera* camera,TransformSystem* transformSystem,Hierarchy* hierarchy) {
     _window = window;
     _scene = scene;
     wdth = Width;
@@ -23,15 +25,16 @@ void Editor::Init(float Width, float Height,Window* window,Scene* scene,const ma
     selector = std::make_unique<Selector>();
     gridRenderer = std::make_unique<GridRenderer>();
     gizmoController = std::make_unique<GizmoController>();
-    hierarchy = std::make_unique<Hierarchy>();
+    _hierarchy = hierarchy;
+    _transformSystem = transformSystem;
     input = std::make_unique<Input>(_window);
     ui = std::make_unique<UIManager>();
     gizmo = std::make_unique<Gizmo>();
     gridRenderer->Init(100);
-    gizmo->Init(wdth,hght);
+    gizmo->Init(wdth,hght,&gizmoData);
     ui->Init(window,shaderID);
     selector->Init(wdth,hght);
-    gizmoController->Init(wdth,hght);
+    gizmoController->Init(wdth,hght,&gizmoData);
     auto handle1 = input->mouseDown.Subscribe([this](int mx, int my) { OnMouseDown(mx, my); });
     auto handle2 = input->mouseUp.Subscribe([this](int mx, int my) {OnMouseUp(mx,my); });
 
@@ -54,22 +57,20 @@ void Editor::Run(float deltaT) {
     mathpp::vec2f pos;
     input->GetCursorPos(pos);
     if (_scene->GetSelected().has_value()) {
-        gizmo->Render(_scene,_camera->GetViewMatrix(),proj,_scene->GetComponent<TransformComponent>(_scene->GetSelected().value()).position,_camera->GetPosition());
-        gizmo->RenderIDs(_camera->GetViewMatrix(),proj,_scene->GetComponent<TransformComponent>(_scene->GetSelected().value()).position,_camera->GetPosition());
+        gizmo->Render(_scene,_camera->GetViewMatrix(),proj,_transformSystem->GetTransform(_scene->GetSelected().value()).position,_camera->GetPosition());
+        gizmo->RenderIDs(_camera->GetViewMatrix(),proj,_transformSystem->GetTransform(_scene->GetSelected().value()).position,_camera->GetPosition());
         gizmo->UpdateHighlight(static_cast<int>(pos.x),static_cast<int>(pos.y),gizmoController->GetActiveAxis(),gizmoController->IsDragging());
     }
 
     if (gizmoController->IsDragging()) {
-        mathpp::vec3f value;
-        if (gizmoController->Continue(_camera->GetViewMatrix(), proj, pos.x, pos.y, value)) {
-            _scene->GetComponent<TransformComponent>(_scene->GetSelected().value()).position = value;
-        }
+        gizmoController->Apply(_camera->GetViewMatrix(), proj, pos.x, pos.y, _transformSystem,_scene->GetSelected().value());
     }
-    selector->RenderScene(_scene,_camera->GetViewMatrix(),proj);
+    selector->RenderScene(_scene,_camera->GetViewMatrix(),proj,_transformSystem);
     ui->BeginFrame();
-    ui->RenderProperties(_scene);
-    ui->RenderAddMenu(_scene);
-    ui->RenderHierarchy(_scene,hierarchy.get());
+    ui->RenderProperties(_scene,_transformSystem);
+    ui->RenderAddMenu(_scene,_transformSystem);
+    ui->RenderHierarchy(_scene,_hierarchy);
+    ui->RenderGizmoControls(&gizmoData);
     ui->EndFrame();
 
 
@@ -92,24 +93,22 @@ void Editor::TrySelect(int mx, int my) {
 
 void Editor::OnMouseDown(int mx, int my) {
     if (!ui->WantCaptureMouse()) {
-        if (!_scene->GetSelected().has_value()) {
-            TrySelect(mx, my);
-            return;
+        if (ui->WantCaptureMouse()) return;
+
+        if (_scene->GetSelected().has_value()) {
+            GizmoAxis pickedAxis = gizmo->ReadAxisAt(mx, my);
+            if (pickedAxis != GizmoAxis::None) {
+                gizmoData.axis = pickedAxis;
+                TransformComponent transform = _transformSystem->GetTransform(_scene->GetSelected().value());
+                gizmoController->Begin(_camera->GetViewMatrix(), proj, mx, my, transform.position, transform.rotation, transform.scale);
+                return;
+            }
         }
 
-        Entity selected = _scene->GetSelected().value();
-        const TransformComponent* t = _scene->TryGetComponent<TransformComponent>(selected);
-        if (!t) return;
-
-        GizmoAxis axis = gizmo->ReadAxisAt(mx, my);
-
-        if (axis != GizmoAxis::None) {
-            gizmoController->Begin(axis,t->position,_gizmoState);
-        } else {
-            TrySelect(mx, my);
-        }
+        TrySelect(mx, my);
     }
 }
+
 
 void Editor::OnMouseUp(int mx, int my) {
     gizmoController->End();

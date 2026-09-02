@@ -11,3 +11,4 @@
 #include "matrix_transform.hpp"
 #include "euler_angles.hpp"
 #include "quaternion.hpp"
+#include <cmath>

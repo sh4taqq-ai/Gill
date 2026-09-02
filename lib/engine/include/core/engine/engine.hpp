@@ -3,9 +3,12 @@
 #include <memory>
 #include "mathpp.hpp"
 
+
 class Renderer ;
 class Camera;
 class Scene;
+class TransformSystem;
+class Hierarchy;
 
 
 class Engine {
@@ -16,12 +19,17 @@ public:
     void Init(unsigned int width, unsigned int height,Camera* cam,Scene* scene);
     void Run();
     void Shutdown();
+    TransformSystem* GetTransformSystem();
+    Hierarchy* GetHierarchy();
 
 private:
     unsigned int wdth,hght;
     std::unique_ptr<Renderer> renderer;
+    std::unique_ptr<TransformSystem> transformSystem;
+    std::unique_ptr<Hierarchy> hierarchy;
     Camera* _cam;
     Scene* _scene;
+
     mathpp::mat4f& proj;
 
 };

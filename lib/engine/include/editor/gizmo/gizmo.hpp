@@ -1,18 +1,21 @@
 #pragma once
-#include "scene/scene.hpp"
 #include "mathpp.hpp"
 #include "gizmoData.hpp"
+#include <memory>
+class Scene;
+class Mesh;
+class Shader;
 
 
 class Gizmo {
 public:
 
-    void Init(unsigned int width,unsigned int height);
+    void Init(unsigned int width,unsigned int height,GizmoData* gizmoData);
     void Render(Scene* scene,const mathpp::mat4f& view, const mathpp::mat4f& projection,const mathpp::vec3f& gizmoPosition, const mathpp::vec3f& cameraPos);
     void RenderIDs(const mathpp::mat4f& view, const mathpp::mat4f& projection, const mathpp::vec3f& gizmoPosition, const mathpp::vec3f& cameraPos);
-    void Switch();
     void UpdateHighlight(int x, int y,GizmoAxis dragAxis,bool isDragging = false);
     GizmoAxis ReadAxisAt(int x, int y) const;
+    ~Gizmo();
 
 private:
     void DrawAxis(const mathpp::vec3f& gizmoPosition, const mathpp::mat4f& axisRotation,
@@ -28,6 +31,6 @@ private:
     unsigned int pickWidth, pickHeight;
     float wdth,hght;
     float AxisHeight = 1.0f;
-    GizmoState _state = GizmoState::Translate;
+    GizmoData* _gizmoData;
     GizmoAxis highlightedAxis = GizmoAxis::None;
 };

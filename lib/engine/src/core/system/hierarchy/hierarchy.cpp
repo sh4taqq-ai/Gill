@@ -3,22 +3,28 @@
 void Hierarchy::SetParent(Entity child, Entity parent) {
     ParentComponent parentComponent;
     parentComponent.SetParent(parent);
+    if (child == parent || IsDescendant(parent, child)) {
+        return;
+    }
 
     if (parents.Has(child)) {
         ParentComponent& oldParentComponent = parents.Get(child);
         RemoveChild(oldParentComponent.parentEntity, child);
-        parents.Remove(child);
     }
 
     parents.Insert(child, parentComponent);
     InsertChild(parent, child);
 }
-Entity Hierarchy::GetParent(Entity child) {
-    if (parents.Has(child)) {
-        return parents.Get(child).parentEntity;
+
+bool Hierarchy::IsDescendant(Entity potentialDescendant, Entity of) {
+    std::optional<Entity> current = TryGetParent(potentialDescendant);
+    while (current.has_value()) {
+        if (*current == of) return true;
+        current = TryGetParent(*current);
     }
-    return {};
+    return false;
 }
+
 
 void Hierarchy::InsertChild(Entity parent, Entity child) {
     if (!children.Has(parent)) {
@@ -79,3 +85,11 @@ void Hierarchy::RemoveParent(Entity child) {
 
 
 Hierarchy::~Hierarchy() = default;
+
+
+void Hierarchy::Unparent(Entity child) {
+    if (parents.Has(child)) {
+        Entity oldParent = parents.Get(child).parentEntity;
+        RemoveChild(oldParent, child); // already handles children list + parents.Remove internally
+    }
+}

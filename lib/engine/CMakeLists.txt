@@ -48,6 +48,9 @@ add_library(engine STATIC
         include/core/set/sparseset.hpp
         include/core/system/hierarchy/hierarchy.hpp
         include/component/children.hpp
+        include/component/worldTransform.hpp
+        include/core/system/transform/transform.hpp
+        src/core/system/transform/transform.cpp
 
 
 )

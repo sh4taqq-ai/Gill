@@ -18,22 +18,21 @@ void FreeCamera::Update(Input* input, float deltaTime, const mathpp::vec3f& /*ta
     front.y = sin(mathpp::to_radians(pitch));
     front.z = sin(mathpp::to_radians(yaw)) * cos(mathpp::to_radians(pitch));
     camFront = mathpp::normalize(front);
+    if (input->IsKeyDown(GLFW_KEY_W))
+    {position += camFront * speed * deltaTime;}
+    if (input->IsKeyDown(GLFW_KEY_S))
+    {position -= camFront * speed * deltaTime;}
+    if (input->IsKeyDown(GLFW_KEY_A))
+    {position -= mathpp::normalize(mathpp::cross(camFront, {0.0f, 1.0f, 0.0f})) * speed * deltaTime;}
+    if (input->IsKeyDown(GLFW_KEY_D))
+    {position += mathpp::normalize(mathpp::cross(camFront, {0.0f, 1.0f, 0.0f})) * speed * deltaTime;}
+    if (input->IsKeyDown(GLFW_KEY_SPACE))
+    {position -= mathpp::normalize(mathpp::cross(camFront, {0.0f, 0.0f, 1.0f})) * speed * deltaTime;}
+    if (input->IsKeyDown(GLFW_KEY_LEFT_SHIFT))
+    {position += mathpp::normalize(mathpp::cross(camFront, {0.0f, 0.0f, 1.0f})) * speed * deltaTime;}
 
     if (input->IsMouseButtonDown(GLFW_MOUSE_BUTTON_MIDDLE)) {
         input->SetCursorMode(2);
-
-        if (input->IsKeyDown(GLFW_KEY_W))
-            position += camFront * speed * deltaTime;
-        if (input->IsKeyDown(GLFW_KEY_S))
-            position -= camFront * speed * deltaTime;
-        if (input->IsKeyDown(GLFW_KEY_A))
-            position -= mathpp::normalize(mathpp::cross(camFront, {0.0f, 1.0f, 0.0f})) * speed * deltaTime;
-        if (input->IsKeyDown(GLFW_KEY_D))
-            position += mathpp::normalize(mathpp::cross(camFront, {0.0f, 1.0f, 0.0f})) * speed * deltaTime;
-        if (input->IsKeyDown(GLFW_KEY_SPACE))
-            position -= mathpp::normalize(mathpp::cross(camFront, {0.0f, 0.0f, 1.0f})) * speed * deltaTime;
-        if (input->IsKeyDown(GLFW_KEY_LEFT_SHIFT))
-            position += mathpp::normalize(mathpp::cross(camFront, {0.0f, 0.0f, 1.0f})) * speed * deltaTime;
     }
     else {input->SetCursorMode(0);}
 

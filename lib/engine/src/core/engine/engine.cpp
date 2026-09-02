@@ -3,13 +3,17 @@
 #include <GLFW/glfw3.h>
 #include "render/core/renderer.hpp"
 #include "core/component/camera/camera.hpp"
-
+#include "core/system/transform/transform.hpp"
+#include "core/system/hierarchy/hierarchy.hpp"
 
 void Engine::Init(unsigned int width, unsigned int height,Camera* camera,Scene* scene) {
     _cam = camera;
     _scene = scene;
     renderer = std::make_unique<Renderer>();
-    renderer->Init();
+    transformSystem = std::make_unique<TransformSystem>();
+    hierarchy = std::make_unique<Hierarchy>();
+    transformSystem->Init(hierarchy.get());
+    renderer->Init(transformSystem.get());
     wdth = width;
     hght = height;
 
@@ -30,3 +34,11 @@ Engine::Engine(const mathpp::mat4f& projection)
 }
 
 Engine::~Engine() = default;
+
+TransformSystem *Engine::GetTransformSystem() {
+    return transformSystem.get();
+}
+
+Hierarchy *Engine::GetHierarchy() {
+    return hierarchy.get();
+}

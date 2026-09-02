@@ -19,8 +19,9 @@ void App::Init(unsigned int width, unsigned int height) {
     camera = std::make_unique<Camera>();
     input = std::make_unique<Input>(window.get());
     engine->Init(wdth,hght,camera.get(),scene.get());
-    editor->Init(wdth,hght,window.get(),scene.get(),projection,camera.get());
+    editor->Init(wdth,hght,window.get(),scene.get(),projection,camera.get(),engine->GetTransformSystem(),engine->GetHierarchy());
 }
+
 
 void App::Run() {
     while (!window->ShouldClose()) {

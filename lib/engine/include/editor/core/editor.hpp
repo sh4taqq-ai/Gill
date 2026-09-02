@@ -14,14 +14,16 @@ class Window;
 class Scene;
 class Selector;
 class Camera;
+class TransformSystem;
 class Hierarchy;
+
 
 using MouseEvent = EventDelegate<int,int>;
 
 class Editor {
 public:
     Editor();
-    void Init(float width, float height,Window* window,Scene* scene,const mathpp::mat4f& projection,Camera* camera);
+    void Init(float width, float height,Window* window,Scene* scene,const mathpp::mat4f& projection,Camera* camera,TransformSystem* transformSystem,Hierarchy* hierarchy);
     void Run(float deltaT);
     void ShutDown();
     void OnMouseDown(int mx, int my);
@@ -39,11 +41,12 @@ private:
     std::unique_ptr<UIManager> ui;
     std::unique_ptr<Selector> selector;
     std::unique_ptr<GizmoController> gizmoController;
-    std::unique_ptr<Hierarchy> hierarchy;
+    Hierarchy* _hierarchy;
     Camera* _camera;
     Scene* _scene;
     Window* _window;
-    GizmoState _gizmoState = GizmoState::Translate;
+    GizmoData gizmoData;
+    TransformSystem* _transformSystem;
     std::vector<std::pair<MouseEvent*, MouseEvent::Handle>> _handles;
     mathpp::mat4f proj;
 };

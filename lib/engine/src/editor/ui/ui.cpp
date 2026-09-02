@@ -4,12 +4,8 @@
 #include "core/system/hierarchy/hierarchy.hpp"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
-
-
-
-
-
-
+#include "core/system/transform/transform.hpp"
+#include "editor/gizmo/gizmoData.hpp"
 
 
 void UIManager::Init(Window* window,uint32_t shaderID) {
@@ -33,7 +29,7 @@ void UIManager::EndFrame() {
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
-void UIManager::RenderProperties(Scene* scene) {
+void UIManager::RenderProperties(Scene* scene,TransformSystem* transformSystem) {
     ImGui::SetNextWindowSize(ImVec2(500, 600), ImGuiCond_Once);
     ImGui::SetNextWindowPos(
     ImVec2(1,60 ),
@@ -43,19 +39,22 @@ void UIManager::RenderProperties(Scene* scene) {
     if (scene->GetSelected().has_value()) {
         ImGui::Text("Entity: %u", scene->GetSelected().value());
         ImGui::NewLine();
-         TransformComponent* transform = scene->TryGetComponent<TransformComponent>(scene->GetSelected().value());
-        if (transform != nullptr) {
-            ImGui::InputFloat3(
-           "Position",
-           &transform->position.x);
+        Entity entity = scene->GetSelected().value();
+        TransformComponent transform = transformSystem->GetTransform(entity); // local copy, read-only source
 
-            ImGui::InputFloat3(
-                "Rotation",
-                &transform->rotation.x);
+        mathpp::vec3f pos = transform.position;
+        if (ImGui::InputFloat3("Position", &pos.x)) {
+            transformSystem->SetPosition(entity, pos);
+        }
 
-            ImGui::InputFloat3(
-                "Scale",
-                &transform->scale.x);
+        mathpp::vec3f euler = mathpp::QuatToEulerAngles(transform.rotation);
+        if (ImGui::InputFloat3("Rotation", &euler.x)) {
+            transformSystem->SetRotation(entity, mathpp::QuatFromEulerAngles(euler));
+        }
+
+        mathpp::vec3f scale = transform.scale;
+        if (ImGui::InputFloat3("Scale", &scale.x)) {
+            transformSystem->SetScale(entity, scale);
         }
 
         SunlightComponent* sunlight = scene->TryGetComponent<SunlightComponent>(scene->GetSelected().value());
@@ -67,7 +66,7 @@ void UIManager::RenderProperties(Scene* scene) {
     ImGui::End();
 }
 
-void UIManager::AddPrimitive(Scene* scene, PrimitiveType type) {
+void UIManager::AddPrimitive(Scene* scene, PrimitiveType type,TransformSystem* transformSystem) {
     Mesh mesh = [&] {
         switch (type) {
             case PrimitiveType::Cube:   return CreateCube();
@@ -84,22 +83,18 @@ void UIManager::AddPrimitive(Scene* scene, PrimitiveType type) {
     MeshComponent meComp;
     meComp.meshID = meshID;
     meComp.shaderID = defaultShaderID;
-
-    TransformComponent tComp;
-
-    scene->InsertComponent(entity, tComp);
+    transformSystem->AddTransform(entity);
     scene->InsertComponent(entity, meComp);
 }
 
-void UIManager::RenderAddMenu(Scene* scene) {
+void UIManager::RenderAddMenu(Scene* scene,TransformSystem* transformSystem) {
     if (ImGui::BeginMainMenuBar()) {
         if (ImGui::BeginMenu("Add")) {
-            if (ImGui::MenuItem("Cube"))   AddPrimitive(scene, PrimitiveType::Cube);
-            if (ImGui::MenuItem("Sphere")) AddPrimitive(scene, PrimitiveType::Sphere);
-            if (ImGui::MenuItem("Plane"))  AddPrimitive(scene, PrimitiveType::Plane);
-            if (ImGui::MenuItem("Cylinder")) AddPrimitive(scene, PrimitiveType::Cylinder);
-            if (ImGui::MenuItem("Cone")) AddPrimitive(scene, PrimitiveType::Cone);
-            if (ImGui::MenuItem("Sun Light")) AddSunlight(scene);
+            if (ImGui::MenuItem("Cube"))   AddPrimitive(scene, PrimitiveType::Cube,transformSystem);
+            if (ImGui::MenuItem("Sphere")) AddPrimitive(scene, PrimitiveType::Sphere,transformSystem);
+            if (ImGui::MenuItem("Plane"))  AddPrimitive(scene, PrimitiveType::Plane,transformSystem);
+            if (ImGui::MenuItem("Cylinder")) AddPrimitive(scene, PrimitiveType::Cylinder,transformSystem);
+            if (ImGui::MenuItem("Cone")) AddPrimitive(scene, PrimitiveType::Cone,transformSystem);
             ImGui::EndMenu();
         }
         ImGui::EndMainMenuBar();
@@ -113,25 +108,7 @@ void UIManager::Shutdown() {
     ImGui::DestroyContext();
 }
 
-void UIManager::AddSunlight(Scene* scene) {
-    Mesh mesh = CreateSphere(8, 8, 0.3f);
 
-    Entity entity = scene->CreateEntity();
-    AssetID meshID = scene->LoadMesh(std::move(mesh));
-
-    MeshComponent meComp;
-    meComp.meshID = meshID;
-    meComp.shaderID = defaultShaderID;
-
-    TransformComponent tComp;
-
-    SunlightComponent sunComp;
-
-
-    scene->InsertComponent(entity, tComp);
-    scene->InsertComponent(entity, meComp);
-    scene->InsertComponent(entity, sunComp);
-}
 
 bool UIManager::WantCaptureMouse() {
     return io_ptr->WantCaptureMouse==true;
@@ -147,6 +124,16 @@ void UIManager::RenderHierarchy(Scene *scene,Hierarchy* hierarchy) {
            if (!parent.has_value()) {
                DrawEntityNode(scene,entity,hierarchy);
            }
+       }
+       ImGui::Spacing();
+       ImGui::Separator();
+       ImGui::Selectable("##DropToRootTarget", false, ImGuiSelectableFlags_DontClosePopups, ImGui::GetContentRegionAvail());
+       if (ImGui::BeginDragDropTarget()) {
+           if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ENTITY_DRAG")) {
+               Entity draggedEntity = *(Entity*)payload->Data;
+               hierarchy->Unparent(draggedEntity);
+           }
+           ImGui::EndDragDropTarget();
        }
    }
 
@@ -164,6 +151,22 @@ void UIManager::DrawEntityNode(Scene *scene, Entity entity, Hierarchy *hierarchy
     if (ImGui::IsItemClicked()) {
         scene->SetSelected(entity);
     }
+    if (ImGui::BeginDragDropSource()) {
+        ImGui::SetDragDropPayload("ENTITY_DRAG", &entity, sizeof(Entity));
+        ImGui::Text("%s", title.c_str());  // optional: shows a small preview label while dragging
+        ImGui::EndDragDropSource();
+    }
+
+
+    if (ImGui::BeginDragDropTarget()) {
+        if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ENTITY_DRAG"))
+        {
+            Entity draggedEntity = *(Entity*)payload->Data;
+            hierarchy->SetParent(draggedEntity, entity);
+        }
+        ImGui::EndDragDropTarget();
+    }
+
     if (isNodeOpen) {
 
         for (uint32_t i = 0; i < children.size(); i++) {
@@ -172,4 +175,23 @@ void UIManager::DrawEntityNode(Scene *scene, Entity entity, Hierarchy *hierarchy
 
         ImGui::TreePop();
     }
+}
+
+void UIManager::RenderGizmoControls(GizmoData* gizmoData) {
+    ImGui::Begin("Gizmo");
+
+    const char* modeLabel = gizmoData->mode == GizmoMode::Translate ? "Translate"
+                           : gizmoData->mode == GizmoMode::Rotate ? "Rotate" : "Scale";
+    if (ImGui::Button(modeLabel, ImVec2{80, 20})) {
+        SwitchMode(gizmoData);
+    }
+
+    ImGui::SameLine();
+
+    const char* frameLabel = gizmoData->referenceFrame == ReferenceFrame::Local ? "Local" : "World";
+    if (ImGui::Button(frameLabel, ImVec2{80, 20})) {
+        ToggleReferenceFrame(gizmoData);
+    }
+
+    ImGui::End();
 }

@@ -16,6 +16,13 @@ namespace mathpp {
         return result;
     }
 
+    template<typename T>
+    T to_degrees(const T& radians) {
+        T result;
+        result = radians * (180 / PI<T>);
+        return result;
+    }
+
     template <typename T>
     T clamp(T value,T minVal,T maxVal) {
         if (value < minVal) {
