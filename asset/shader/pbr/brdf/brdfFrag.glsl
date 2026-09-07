@@ -1,6 +1,6 @@
 #version 330 core
 
-#define PI 3.14159265f
+#define PI 3.14159265359
 
 in vec3 normals;
 in vec3 vertexColor;
@@ -9,76 +9,87 @@ uniform vec3 albedo;
 uniform vec3 viewVec;
 uniform vec3 lightDir;
 
-uniform float kS = 0.8;
+// Added Metallic parameter for full PBR support
+uniform float metallic = 0.0; 
+uniform float roughness = 0.5;
 
+out vec4 fragColor;
 
-
-vec3 ComputeHalf(vec3 light, vec3 view){
+vec3 ComputeHalf(vec3 light, vec3 view) {
     return normalize(light + view);
 }
 
 float NormalDistribute(float rough, vec3 normal, vec3 halfVec) {
-    float roughSq = rough * rough;
-    float rough4  = roughSq * roughSq; // Standard GGX uses roughness^4
-    float dotNH   = max(dot(normal, halfVec), 0.0f);
-    float dotNHSq = dotNH * dotNH;
+    float a = rough * rough;
+    float a2 = a * a;
+    float NdotH = max(dot(normal, halfVec), 0.0);
+    float NdotHSq = NdotH * NdotH;
 
-    float denom = (dotNHSq * (rough4 - 1.0f) + 1.0f);
+    float denom = (NdotHSq * (a2 - 1.0) + 1.0);
     denom = PI * denom * denom;
 
-    return rough4 / denom;
+    return a2 / max(denom, 0.0001);
 }
 
-float GeometryFactor(vec3 normal,float roughness,vec3 direction){
-    float roughSq = roughness * roughness;
-    float num = 2.0 * dot(normal,direction);
-    float denom = dot(normal,direction) + sqrt(roughSq + (1.0 - roughSq)*pow(dot(normal,direction),2));
-    return num/denom;
+float GeometryFactor(float NdotV, float roughness) {
+    float r = (roughness + 1.0);
+    float k = (r * r) / 8.0; // Direct lighting k parameter
+
+    float num = NdotV;
+    float denom = NdotV * (1.0 - k) + k;
+    return num / max(denom, 0.0001);
 }
 
-float GeometryTerm(vec3 view, vec3 light, vec3 normal, float rough){
-    float result = GeometryFactor(normal, rough, view) * GeometryFactor(normal, rough, light);
-    return result;
+float GeometryTerm(vec3 view, vec3 light, vec3 normal, float rough) {
+    float NdotV = max(dot(normal, view), 0.0);
+    float NdotL = max(dot(normal, light), 0.0);
+    
+    return GeometryFactor(NdotV, rough) * GeometryFactor(NdotL, rough);
 }
 
-vec3 Schlick_Approx(vec3 view,vec3 halfVec,vec3 F0) {
-    float part2 = (1.0f - dot(view,halfVec));
-    return F0 + (vec3(1.0) - F0) * pow(part2,5.0);
+vec3 Schlick_Approx(float VdotH, vec3 F0) {
+    return F0 + (vec3(1.0) - F0) * pow(clamp(1.0 - VdotH, 0.0, 1.0), 5.0);
 }
 
-vec3 SpecularBRDF(vec3 fresnel, float distribute, float geometryTerm, vec3 normal, vec3 light,vec3 view) {
-    vec3 num = distribute * geometryTerm * fresnel;
-    float denom = 4.0 * dot(normal,view) * dot(normal,light);
-    return num/denom;
-}
-
-
-
-vec3 PBRShader(vec3 albedo, vec3 normal, vec3 view, vec3 light, float rough, vec3 F0) {
-    float kD = 1.0 - kS;
-
+vec3 PBRShader(vec3 albedo, vec3 normal, vec3 view, vec3 light, float rough, float metal) {
     vec3 halfVec = ComputeHalf(light, view);
-    float distribute = NormalDistribute(rough, normal, halfVec);
-    vec3 fresnel = Schlick_Approx(view, halfVec, F0);
-    float geoTerm = GeometryTerm(view, light, normal, rough);
-    vec3 specular = SpecularBRDF(fresnel, distribute, geoTerm, normal, light, view);
 
     float NdotL = max(dot(normal, light), 0.0);
+    float NdotV = max(dot(normal, view), 0.0);
+    float VdotH = max(dot(view, halfVec), 0.0);
 
-    vec3 term1 = kD * albedo / PI;
-    vec3 term2 = kS * specular;
-    vec3 result = (term1 + term2) * NdotL;
-    return result;
+    // Default base reflectivity: 0.04 for dielectrics, tinted albedo for metals
+    vec3 F0 = mix(vec3(0.04), albedo, metal);
+
+    // Cook-Torrance Terms
+    float D = NormalDistribute(rough, normal, halfVec);
+    float G = GeometryTerm(view, light, normal, rough);
+    vec3  F = Schlick_Approx(VdotH, F0);
+
+    // Specular BRDF
+    vec3 numerator = D * G * F;
+    float denominator = 4.0 * NdotV * NdotL + 0.0001; // Epsilon prevents div-by-zero
+    vec3 specular = numerator / denominator;
+
+    // Energy Conservation: kS is Fresnel (F), kD is remaining diffuse
+    vec3 kS = F;
+    vec3 kD = (vec3(1.0) - kS) * (1.0 - metal); // Pure metals have zero diffuse
+
+    // Final Radiance
+    vec3 diffuse = kD * albedo / PI;
+    return (diffuse + specular) * NdotL;
 }
-out vec4 fragColor;
+
 void main() {
     vec3 view = normalize(viewVec);
     vec3 light = normalize(lightDir);
     vec3 normal = normalize(normals);
 
-    float roughness = 0.5; // temp constant, or wire up a uniform later
-    vec3 F0 = vec3(0.04);  // typical dielectric F0, or wire up a uniform later
+    vec3 color = PBRShader(albedo, normal, view, light, roughness, metallic);
 
-    vec3 color = PBRShader(albedo, normal, view, light, roughness, F0);
+    // Basic Tone Mapping + Gamma Correction (Required for PBR to look right!)
+    color = color / (color + vec3(1.0)); // Reinhard
+    color = pow(color, vec3(1.0 / 2.2));  // Linear to sRGB space
+
     fragColor = vec4(color, 1.0);
 }
