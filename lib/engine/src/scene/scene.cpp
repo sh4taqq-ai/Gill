@@ -2,6 +2,8 @@
 
 
 
+
+
 Entity Scene::CreateEntity() {
     Entity entity = entityManager.CreateEntity();
     return entity;
@@ -14,13 +16,9 @@ void Scene::DestroyEntity(Entity entity) {
 Scene::~Scene() = default;
 
 
-const Mesh *Scene::GetMesh(AssetID id) const {
-    return meshManager.Get(id);
-}
 
-const Shader *Scene::GetShader(AssetID id) const {
-    return shaderManager.Get(id);
-}
+
+
 
 
 
@@ -42,3 +40,7 @@ uint32_t Scene::GetEntityCount() {
 std::vector<Entity> Scene::GetLivingEntities() const {
     return entityManager.GetLivingEntity();
 }
+
+
+
+

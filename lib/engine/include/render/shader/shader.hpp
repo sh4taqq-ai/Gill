@@ -21,6 +21,7 @@ public:
     void setMat4f(const std::string& name, const mathpp::mat4f& matrix) const;
     void setVec2f(const std::string& name, const mathpp::vec2f& vector) const;
     void setVec3f(const std::string& name, const mathpp::vec3f& vector) const;
+    void setMat3f(const std::string& name, const mathpp::mat3f& matrix) const;
 
 private:
     unsigned int ID;

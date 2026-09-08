@@ -1,17 +1,19 @@
 #pragma once
 #include <vector>
 #include "component/entity.hpp"
-#include "component/transform.hpp"
 #include "component/mesh.hpp"
 #include "component/sunlight.hpp"
 #include <functional>
 #include "core/set/sparseset.hpp"
 #include "core/system/asset/asset.hpp"
+#include "component/material.hpp"
 #include <optional>
+#include "render/mesh/mesh.hpp"
+
 class Scene {
 public:
 
-    Scene() = default;
+    Scene();
     ~Scene();
 
 
@@ -54,13 +56,15 @@ T* TryGetComponent(Entity entity);
 
 
 
-
-
     AssetID LoadMesh(Mesh mesh) { return meshManager.Load(std::move(mesh)); }
-    AssetID LoadShader(Shader shader) { return shaderManager.Load(std::move(shader)); }
 
-    const Mesh* GetMesh(AssetID id) const;
-    const Shader* GetShader(AssetID id) const;
+
+
+
+
+
+
+
 
 
 
@@ -72,11 +76,11 @@ T* TryGetComponent(Entity entity);
     uint32_t GetEntityCount();
 
 
+
     private:
     std::optional<Entity> selected;
     EntityManager entityManager;
     AssetManager<Mesh> meshManager;
-    AssetManager<Shader> shaderManager;
     SparseSet<MeshComponent> meshes;
     SparseSet<SunlightComponent> sunlights;
 };
@@ -159,3 +163,4 @@ T* TryGetComponent(Entity entity);
             func(sunlights.GetEntity(it), sunlights[it]);
         }
     }
+

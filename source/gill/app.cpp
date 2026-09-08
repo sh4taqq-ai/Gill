@@ -8,17 +8,21 @@
 #include "core/input/input.hpp"
 
 void App::Init(unsigned int width, unsigned int height) {
-    wdth = width;
-    hght = height;
+    int actualWidth, actualHeight;
+    window = std::make_unique<Window>(width,height,title);
+    window->GetFrameBufferSize(&actualWidth, &actualHeight);
+
+    wdth = static_cast<float>(actualWidth);
+    hght = static_cast<float>(actualHeight);
     aspect = static_cast<float>(width) / static_cast<float>(height);
     projection = mathpp::perspective(45.0f,aspect,0.01f,300.0f);
-    window = std::make_unique<Window>(wdth,hght,title);
+
     engine = std::make_unique<Engine>(projection);
     editor = std::make_unique<Editor>();
     scene = std::make_unique<Scene>();
     camera = std::make_unique<Camera>();
     input = std::make_unique<Input>(window.get());
-    engine->Init(wdth,hght,camera.get(),scene.get());
+    engine->Init(static_cast<int>(wdth),static_cast<int>(hght),camera.get(),scene.get());
     editor->Init(wdth,hght,window.get(),scene.get(),projection,camera.get(),engine->GetTransformSystem(),engine->GetHierarchy());
 }
 

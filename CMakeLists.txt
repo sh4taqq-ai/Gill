@@ -19,6 +19,7 @@ FetchContent_MakeAvailable(glfw)
 
 add_subdirectory(extern/glad)
 add_subdirectory(extern/imgui)
+add_subdirectory(extern/stb_image)
 add_subdirectory(lib/mathpp)
 add_subdirectory(lib/engine)
 

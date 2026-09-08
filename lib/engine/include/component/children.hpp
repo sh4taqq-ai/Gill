@@ -1,7 +1,7 @@
 #pragma once
 #include <algorithm>
 #include <vector>
-#include <cstdint>
+#include "assetID.hpp"
 
 using Entity = uint32_t;
 struct ChildComponent {

@@ -38,6 +38,10 @@ public:
         mAvailableIDs.push(id);
     }
 
+    bool Has(AssetID id) const {
+        return id < mAssets.size();
+    }
+
 private:
     std::vector<T> mAssets;
     std::queue<AssetID> mAvailableIDs;

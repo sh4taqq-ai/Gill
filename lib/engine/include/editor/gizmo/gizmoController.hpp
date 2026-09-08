@@ -10,9 +10,9 @@ struct Ray;
 class GizmoController {
 public:
     ~GizmoController();
-    void Init(float width, float height,GizmoData* gizmoData);
-    void Begin(const mathpp::mat4f& view, const mathpp::mat4f& proj, float mouseX, float mouseY,const mathpp::vec3f& dragStart,const mathpp::quatf& dragRotStart, const mathpp::vec3f& dragScaleStart);
-    bool Apply(const mathpp::mat4f& view, const mathpp::mat4f& proj,float mouseX, float mouseY,TransformSystem* transformSystem, Entity entity);
+    void Init(float width, float height,GizmoData* gizmoData,TransformSystem* transformSystem);
+    void Begin(const mathpp::mat4f& view, const mathpp::mat4f& proj, float mouseX, float mouseY,const mathpp::vec3f& dragStart,const mathpp::quatf& dragRotStart, const mathpp::vec3f& dragScaleStart, Entity entity);
+    bool Apply(const mathpp::mat4f& view, const mathpp::mat4f& proj,float mouseX, float mouseY, Entity entity);
     GizmoAxis GetActiveAxis() const;
     bool IsDragging();
     void End();
@@ -28,11 +28,13 @@ private:
     bool ContinueRotate(const mathpp::mat4f& view,const mathpp::mat4f& proj,float mouseX,float mouseY,mathpp::quatf& outValue);
     bool isDragging = false;
     GizmoData* _gizmoData;
+    TransformSystem* _transformSystem;
     float wdth, hght;
     mathpp::vec3f _dragStartPos;
     mathpp::vec3f _dragStartScale;
     mathpp::vec3f _dragStartRadial;
     mathpp::quatf _dragStartRot;
+    Entity _draggedEntity;
     static constexpr float minDenom = 0.01f;
     static constexpr float sensitivity = 0.4f;
 };

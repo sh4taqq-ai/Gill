@@ -51,9 +51,14 @@ add_library(engine STATIC
         include/component/worldTransform.hpp
         include/core/system/transform/transform.hpp
         src/core/system/transform/transform.cpp
+        include/core/debug/error.hpp
+        include/render/texture/texture.hpp
+        src/render/texture/texture.cpp
+        include/component/material.hpp
+        include/component/assetID.hpp
 
 
 )
 
-target_link_libraries(engine PUBLIC glad glfw mathpp imgui gill)
+target_link_libraries(engine PUBLIC glad glfw mathpp imgui gill stb_image)
 target_include_directories(engine PUBLIC include)

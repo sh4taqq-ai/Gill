@@ -13,6 +13,7 @@ class Window {
     void PollEvents();
      GLFWwindow* GetWindow();
     void GetCursorPos(double&x,double&y);
+    void GetFrameBufferSize(int* width,int* height);
     int GetLeftMouseButton() const;
     private:
     GLFWwindow* wp;

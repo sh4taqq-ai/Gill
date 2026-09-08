@@ -9,21 +9,22 @@ GizmoAxis GizmoController::GetActiveAxis() const {
 
 GizmoController::~GizmoController() = default;
 
-void GizmoController::Init(float width, float height,GizmoData* gizmoData) {
+void GizmoController::Init(float width, float height,GizmoData* gizmoData,TransformSystem* transformSystem) {
     wdth = width;
     hght = height;
     _gizmoData = gizmoData;
+    _transformSystem = transformSystem;
 }
 
 bool GizmoController::IsDragging() {
     return isDragging;
 }
 
-void GizmoController::Begin(const mathpp::mat4f& view, const mathpp::mat4f& proj, float mouseX, float mouseY,const mathpp::vec3f &dragPosStart,const mathpp::quatf& dragRotStart, const mathpp::vec3f& dragScaleStart ) {
+void GizmoController::Begin(const mathpp::mat4f& view, const mathpp::mat4f& proj, float mouseX, float mouseY,const mathpp::vec3f &dragPosStart,const mathpp::quatf& dragRotStart, const mathpp::vec3f& dragScaleStart, Entity entity ) {
     if (isDragging)
     {return;}
+    _draggedEntity = entity;
     mathpp::vec3f axisDir = GetAxis();
-
     if (_gizmoData->mode==GizmoMode::Rotate) {
         float ndcX{};
         float ndcY{};
@@ -36,7 +37,8 @@ void GizmoController::Begin(const mathpp::mat4f& view, const mathpp::mat4f& proj
         }
     }
     _dragStartPos = dragPosStart;
-    _dragStartScale = dragPosStart;
+    _dragStartScale = dragScaleStart;
+    _dragStartRot = dragRotStart;
     isDragging = true;
 }
 
@@ -46,24 +48,24 @@ void GizmoController::ComputeNDC(float &x, float &y,float mouseX,float mouseY) {
     y = 1.0f - (mouseY/hght)*2.0f;
 }
 
-bool GizmoController::Apply(const mathpp::mat4f &view, const mathpp::mat4f &proj, float mouseX, float mouseY, TransformSystem *transformSystem, Entity entity) {
+bool GizmoController::Apply(const mathpp::mat4f &view, const mathpp::mat4f &proj, float mouseX, float mouseY, Entity entity) {
     switch (_gizmoData->mode) {
         case GizmoMode::Translate: {
             mathpp::vec3f pos;
             if (!ContinueTranslate(view, proj, mouseX, mouseY, pos)) return false;
-            transformSystem->SetPosition(entity, pos);
+            _transformSystem->SetPosition(entity, pos);
             return true;
         }
         case GizmoMode::Rotate: {
             mathpp::quatf rot;
             if (!ContinueRotate(view, proj, mouseX, mouseY, rot)) return false;
-            transformSystem->SetRotation(entity, rot);
+            _transformSystem->SetRotation(entity, rot);
             return true;
         }
         case GizmoMode::Scale: {
             mathpp::vec3f scale;
             if (!ContinueScale(view, proj, mouseX, mouseY, scale)) return false;
-            transformSystem->SetScale(entity, scale);
+            _transformSystem->SetScale(entity, scale);
             return true;
         }
     }
@@ -183,5 +185,9 @@ mathpp::vec3f GizmoController::GetAxis() {
         default:
             axisDir = mathpp::vec3f(1.0f, 0.0f, 0.0f);
     }
+    if (_gizmoData->referenceFrame == ReferenceFrame::Local) {
+        axisDir = mathpp::RotateVector(_transformSystem->GetWorldRotation(_draggedEntity),axisDir); // world rot needs to come from somewhere
+    }
     return axisDir;
 }
+

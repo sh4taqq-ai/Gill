@@ -57,13 +57,7 @@ Shader::Shader(const std::string& vertPath,const std::string& fragPath) {
         std::cerr << "Fragment shader compile error:\n" << infoLogf << std::endl;
     }
 
-    int successLink;
-    glGetProgramiv(ID, GL_LINK_STATUS, &successLink);
-    if (!successLink) {
-        char infoLog[512];
-        glGetProgramInfoLog(ID, 512, NULL, infoLog);
-        std::cerr << "Shader program link error:\n" << infoLog << std::endl;
-    }
+
 
 
 
@@ -72,6 +66,13 @@ Shader::Shader(const std::string& vertPath,const std::string& fragPath) {
     glAttachShader(ID, fragmentShader);
     glLinkProgram(ID);
     glValidateProgram(ID);
+    int successLink;
+    glGetProgramiv(ID, GL_LINK_STATUS, &successLink);
+    if (!successLink) {
+        char infoLog[512];
+        glGetProgramInfoLog(ID, 512, NULL, infoLog);
+        std::cerr << "Shader program link error:\n" << infoLog << std::endl;
+    }
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
 }
@@ -120,4 +121,9 @@ Shader& Shader::operator=(Shader&& other) noexcept {
         other.ID = 0;
     }
     return *this;
+}
+
+void Shader::setMat3f(const std::string &name, const mathpp::mat3f &matrix) const {
+    const float* p = &matrix.col[0][0];
+    glUniformMatrix3fv(glGetUniformLocation(ID, name.c_str()),1,GL_FALSE,p);
 }

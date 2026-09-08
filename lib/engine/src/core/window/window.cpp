@@ -1,6 +1,7 @@
 #include "core/window/window.hpp"
 #include <cassert>
 #include <iostream>
+#include "core/debug/error.hpp"
 Window::Window(unsigned int width, unsigned int height,const std::string &title) {
     if (!glfwInit()) {
         std::cerr << "glfwInit() failed" << std::endl;
@@ -20,6 +21,9 @@ Window::Window(unsigned int width, unsigned int height,const std::string &title)
     if (!gladLoadGL((GLADloadfunc)glfwGetProcAddress)) {
         std::cerr << "gladLoadGL() failed" << std::endl;
     }
+    while (glGetError() != GL_NO_ERROR) {}
+
+
 
 
 }
@@ -53,3 +57,6 @@ Window::~Window() {
 }
 
 
+void Window::GetFrameBufferSize(int *width, int *height) {
+    glfwGetFramebufferSize(wp,width,height);
+}

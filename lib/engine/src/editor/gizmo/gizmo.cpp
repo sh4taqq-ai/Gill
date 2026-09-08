@@ -1,14 +1,31 @@
 #include "editor/gizmo/gizmo.hpp"
+#include "core/debug/error.hpp"
+#include <iostream>
+#include <ostream>
+#include "core/system/transform/transform.hpp"
 #include "glad/gl.h"
 #include "core/input/input.hpp"
 #include "io/obj/obj.hpp"
 #include "scene/scene.hpp"
 #include "render/shader/shader.hpp"
+#include <iostream>
 
 
-void Gizmo::Init(unsigned int width,unsigned int height,GizmoData* gizmoData) {
+void Gizmo::Init(unsigned int width,unsigned int height,GizmoData* gizmoData,TransformSystem* transformSystem) {
     wdth = width;
     hght = height;
+    glEnable(GL_PROGRAM_POINT_SIZE);
+    glGenVertexArrays(1, &originVAO);
+    glBindVertexArray(originVAO);
+    glGenBuffers(1, &originVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, originVBO);
+    float origin[3] = {0.0f, 0.0f, 0.0f};
+    glBufferData(GL_ARRAY_BUFFER, sizeof(origin), &origin[0], GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    glBindVertexArray(0);
+
+    _transformSystem = transformSystem;
     _gizmoData = gizmoData;
     gizmoShader = std::make_unique<Shader>("asset/shader/gizmo/gizmoShader/gizmoVert.glsl", "asset/shader/gizmo/gizmoShader/gizmoFrag.glsl");
     gizmoShaderID = std::make_unique<Shader>("asset/shader/gizmo/gizmoShaderID/gizmoVertID.glsl","asset/shader/gizmo/gizmoShaderID/gizmoFragID.glsl");
@@ -30,29 +47,19 @@ void Gizmo::Init(unsigned int width,unsigned int height,GizmoData* gizmoData) {
     glBindFramebuffer(GL_FRAMEBUFFER,0);
 }
 
-void Gizmo::Render(Scene* scene,const mathpp::mat4f& view, const mathpp::mat4f& projection,const mathpp::vec3f& gizmoPosition, const mathpp::vec3f& cameraPos) {
+void Gizmo::Render(Scene* scene,const mathpp::mat4f& view, const mathpp::mat4f& projection,const mathpp::vec3f& gizmoPosition, const mathpp::vec3f& cameraPos,Entity entity) {
     gizmoShader->Use();
     gizmoShader->setMat4f("view", view);
     gizmoShader->setMat4f("projection", projection);
 
-    glDisable(GL_DEPTH_TEST);
 
+    glDisable(GL_DEPTH_TEST);
     float distance = mathpp::length(cameraPos - gizmoPosition);
     float scale = distance * 0.08f;
     mathpp::mat4f rotY;
     mathpp::mat4f rotX;
     mathpp::mat4f rotZ;
-
-    if (_gizmoData->mode != GizmoMode::Rotate) {
-         rotY = mathpp::EulerAnglesRotation<float>({0.0f, 90.0f, 0.0f});   // Y arrow: native
-         rotX = mathpp::EulerAnglesRotation<float>({0.0f, 0.0f, -90.0f}); // X arrow
-         rotZ = mathpp::EulerAnglesRotation<float>({90.0f, 0.0f, 0.0f});  // Z arrow
-    }
-    else {
-        rotZ = mathpp::EulerAnglesRotation<float>({0.0f, 90.0f, 0.0f});
-        rotY = mathpp::EulerAnglesRotation<float>({0.0f, 0.0f, -90.0f});
-        rotX = mathpp::EulerAnglesRotation<float>({90.0f, 0.0f, 0.0f});
-    }
+    ComputeAxisRotations(entity, rotX, rotY, rotZ);
 
     mathpp::vec3f xColor = (highlightedAxis == GizmoAxis::X) ? mathpp::vec3f(1.0f,1.0f,0.0f) : mathpp::vec3f(0.8f,0.0f,0.0f);
     DrawAxis(gizmoPosition, rotX, xColor, scale);
@@ -87,11 +94,11 @@ void Gizmo::DrawAxis(const mathpp::vec3f &gizmoPosition, const mathpp::mat4f &ax
         meshModel = meshModel = mathpp::scale(meshModel, {scale, scale, scale});
     }
 
-    gizmoShaderID->setMat4f("model", meshModel);
+    gizmoShader->setMat4f("model", meshModel);
     drawMesh->Draw();
 }
 
-void Gizmo::RenderIDs(const mathpp::mat4f &view, const mathpp::mat4f &projection, const mathpp::vec3f &gizmoPosition, const mathpp::vec3f &cameraPos) {
+void Gizmo::RenderIDs(const mathpp::mat4f &view, const mathpp::mat4f &projection, const mathpp::vec3f &gizmoPosition, const mathpp::vec3f &cameraPos,Entity entity) {
     GLint clearValue = 0;
     glBindFramebuffer(GL_FRAMEBUFFER, pickFBO);
     glClearBufferiv(GL_COLOR, 0, &clearValue);
@@ -109,24 +116,14 @@ void Gizmo::RenderIDs(const mathpp::mat4f &view, const mathpp::mat4f &projection
     mathpp::mat4f rotX;
     mathpp::mat4f rotZ;
 
-    if (_gizmoData->mode != GizmoMode::Rotate) {
-        rotY = mathpp::EulerAnglesRotation<float>({0.0f, 90.0f, 0.0f});   // Y arrow: native
-        rotX = mathpp::EulerAnglesRotation<float>({0.0f, 0.0f, -90.0f}); // X arrow
-        rotZ = mathpp::EulerAnglesRotation<float>({90.0f, 0.0f, 0.0f});  // Z arrow
-    }
-    else {
-        rotZ = mathpp::EulerAnglesRotation<float>({0.0f, 90.0f, 0.0f});
-        rotY = mathpp::EulerAnglesRotation<float>({0.0f, 0.0f, -90.0f});
-        rotX = mathpp::EulerAnglesRotation<float>({90.0f, 0.0f, 0.0f});
-    }
+    ComputeAxisRotations(entity, rotX, rotY, rotZ);
 
     DrawAxisID(gizmoPosition, rotX, scale,static_cast<int>(GizmoAxis::X));
     DrawAxisID(gizmoPosition, rotY,  scale,static_cast<int>(GizmoAxis::Y));
     DrawAxisID(gizmoPosition, rotZ,  scale,static_cast<int>(GizmoAxis::Z));
 
     glEnable(GL_DEPTH_TEST);
-
-
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void Gizmo::DrawAxisID(const mathpp::vec3f &gizmoPosition, const mathpp::mat4f &axisRotation, float scale, unsigned int ID) {
@@ -173,4 +170,40 @@ void Gizmo::UpdateHighlight(int x, int y, GizmoAxis dragAxis, bool isDragging)  
     }
 }
 Gizmo::~Gizmo() = default;
+
+void Gizmo::ComputeAxisRotations(Entity entity, mathpp::mat4f& outRotX, mathpp::mat4f& outRotY, mathpp::mat4f& outRotZ) const {
+    mathpp::quatf worldRot = (_gizmoData->referenceFrame == ReferenceFrame::Local)
+        ? _transformSystem->GetWorldRotation(entity)
+        : mathpp::quatf{};
+    mathpp::mat4f worldRotMat = mathpp::QuatToMat4(worldRot);
+
+    if (_gizmoData->mode != GizmoMode::Rotate) {
+        outRotY = worldRotMat * mathpp::EulerAnglesRotation<float>({0.0f, 90.0f, 0.0f});
+        outRotX = worldRotMat * mathpp::EulerAnglesRotation<float>({0.0f, 0.0f, -90.0f});
+        outRotZ = worldRotMat * mathpp::EulerAnglesRotation<float>({90.0f, 0.0f, 0.0f});
+    } else {
+        outRotZ = worldRotMat * mathpp::EulerAnglesRotation<float>({0.0f, 90.0f, 0.0f});
+        outRotY = worldRotMat * mathpp::EulerAnglesRotation<float>({0.0f, 0.0f, -90.0f});
+        outRotX = worldRotMat * mathpp::EulerAnglesRotation<float>({90.0f, 0.0f, 0.0f});
+    }
+}
+
+void Gizmo::DrawOriginMarker(const mathpp::mat4f& view, const mathpp::mat4f& projection, const mathpp::vec3f& gizmoPosition) {
+    gizmoShader->Use();
+    gizmoShader->setMat4f("view", view);
+    gizmoShader->setMat4f("projection", projection);
+    gizmoShader->setVec3f("axisColor", mathpp::vec3f(1.0f, 1.0f, 1.0f));
+
+    mathpp::mat4f model = mathpp::translate(mathpp::mat4f(), gizmoPosition);
+    gizmoShader->setMat4f("model", model);
+
+    bool depthWasEnabled = glIsEnabled(GL_DEPTH_TEST);
+    glDisable(GL_DEPTH_TEST);
+
+    glBindVertexArray(originVAO);
+    glPointSize(20.0f);
+    glDrawArrays(GL_POINTS, 0, 1);
+
+    if (depthWasEnabled) glEnable(GL_DEPTH_TEST);  // restore whatever state it found
+}
 

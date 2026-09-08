@@ -10,6 +10,8 @@
 #include "editor/gizmo/gizmoController.hpp"
 #include "core/system/transform/transform.hpp"
 #include "scene/scene.hpp"
+#include "core/debug/error.hpp"
+#include <iostream>
 
 
 
@@ -31,19 +33,15 @@ void Editor::Init(float Width, float Height,Window* window,Scene* scene,const ma
     ui = std::make_unique<UIManager>();
     gizmo = std::make_unique<Gizmo>();
     gridRenderer->Init(100);
-    gizmo->Init(wdth,hght,&gizmoData);
+    gizmo->Init(wdth,hght,&gizmoData,_transformSystem);
     ui->Init(window,shaderID);
     selector->Init(wdth,hght);
-    gizmoController->Init(wdth,hght,&gizmoData);
+    gizmoController->Init(wdth,hght,&gizmoData,_transformSystem);
     auto handle1 = input->mouseDown.Subscribe([this](int mx, int my) { OnMouseDown(mx, my); });
     auto handle2 = input->mouseUp.Subscribe([this](int mx, int my) {OnMouseUp(mx,my); });
 
     _handles.push_back(std::make_pair(&input->mouseDown,handle1));
     _handles.push_back(std::make_pair(&input->mouseUp,handle2));
-
-
-
-
 
 
 }
@@ -57,13 +55,14 @@ void Editor::Run(float deltaT) {
     mathpp::vec2f pos;
     input->GetCursorPos(pos);
     if (_scene->GetSelected().has_value()) {
-        gizmo->Render(_scene,_camera->GetViewMatrix(),proj,_transformSystem->GetTransform(_scene->GetSelected().value()).position,_camera->GetPosition());
-        gizmo->RenderIDs(_camera->GetViewMatrix(),proj,_transformSystem->GetTransform(_scene->GetSelected().value()).position,_camera->GetPosition());
+        gizmo->Render(_scene,_camera->GetViewMatrix(),proj,_transformSystem->GetTransform(_scene->GetSelected().value()).position,_camera->GetPosition(),_scene->GetSelected().value());
+        gizmo->RenderIDs(_camera->GetViewMatrix(),proj,_transformSystem->GetTransform(_scene->GetSelected().value()).position,_camera->GetPosition(),_scene->GetSelected().value());
+        gizmo->DrawOriginMarker(_camera->GetViewMatrix(),proj,_transformSystem->GetTransform(_scene->GetSelected().value()).position);
         gizmo->UpdateHighlight(static_cast<int>(pos.x),static_cast<int>(pos.y),gizmoController->GetActiveAxis(),gizmoController->IsDragging());
     }
 
     if (gizmoController->IsDragging()) {
-        gizmoController->Apply(_camera->GetViewMatrix(), proj, pos.x, pos.y, _transformSystem,_scene->GetSelected().value());
+        gizmoController->Apply(_camera->GetViewMatrix(), proj, pos.x, pos.y,_scene->GetSelected().value());
     }
     selector->RenderScene(_scene,_camera->GetViewMatrix(),proj,_transformSystem);
     ui->BeginFrame();
@@ -100,7 +99,7 @@ void Editor::OnMouseDown(int mx, int my) {
             if (pickedAxis != GizmoAxis::None) {
                 gizmoData.axis = pickedAxis;
                 TransformComponent transform = _transformSystem->GetTransform(_scene->GetSelected().value());
-                gizmoController->Begin(_camera->GetViewMatrix(), proj, mx, my, transform.position, transform.rotation, transform.scale);
+                gizmoController->Begin(_camera->GetViewMatrix(), proj, mx, my, transform.position, transform.rotation, transform.scale,_scene->GetSelected().value());
                 return;
             }
         }

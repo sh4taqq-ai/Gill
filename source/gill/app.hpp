@@ -20,7 +20,8 @@ public:
     void Shutdown();
 
 private:
-    float wdth,hght;
+    float wdth{};
+    float hght{};
     std::string title = "Gill";
     std::unique_ptr<Scene> scene;
     std::unique_ptr<Engine> engine;
