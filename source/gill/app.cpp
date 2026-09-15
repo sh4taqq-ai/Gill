@@ -23,7 +23,7 @@ void App::Init(unsigned int width, unsigned int height) {
     camera = std::make_unique<Camera>();
     input = std::make_unique<Input>(window.get());
     engine->Init(static_cast<int>(wdth),static_cast<int>(hght),camera.get(),scene.get());
-    editor->Init(wdth,hght,window.get(),scene.get(),projection,camera.get(),engine->GetTransformSystem(),engine->GetHierarchy());
+    editor->Init(wdth,hght,window.get(),scene.get(),projection,camera.get(),engine->GetTransformSystem(),engine->GetHierarchy(),engine->GetMeshSystem(),engine->GetMaterialSystem(),engine->GetRenderer());
 }
 
 

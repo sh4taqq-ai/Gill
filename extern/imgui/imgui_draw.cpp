@@ -231,6 +231,8 @@ void ImGui::StyleColorsDark(ImGuiStyle* dst)
     colors[ImGuiCol_TabDimmed]              = ImLerp(colors[ImGuiCol_Tab],          colors[ImGuiCol_TitleBg], 0.80f);
     colors[ImGuiCol_TabDimmedSelected]      = ImLerp(colors[ImGuiCol_TabSelected],  colors[ImGuiCol_TitleBg], 0.40f);
     colors[ImGuiCol_TabDimmedSelectedOverline] = ImVec4(0.50f, 0.50f, 0.50f, 0.00f);
+    colors[ImGuiCol_DockingPreview]         = colors[ImGuiCol_HeaderActive] * ImVec4(1.0f, 1.0f, 1.0f, 0.7f);
+    colors[ImGuiCol_DockingEmptyBg]         = ImVec4(0.20f, 0.20f, 0.20f, 1.00f);
     colors[ImGuiCol_PlotLines]              = ImVec4(0.61f, 0.61f, 0.61f, 1.00f);
     colors[ImGuiCol_PlotLinesHovered]       = ImVec4(1.00f, 0.43f, 0.35f, 1.00f);
     colors[ImGuiCol_PlotHistogram]          = ImVec4(0.90f, 0.70f, 0.00f, 1.00f);
@@ -299,6 +301,8 @@ void ImGui::StyleColorsClassic(ImGuiStyle* dst)
     colors[ImGuiCol_TabDimmed]              = ImLerp(colors[ImGuiCol_Tab],          colors[ImGuiCol_TitleBg], 0.80f);
     colors[ImGuiCol_TabDimmedSelected]      = ImLerp(colors[ImGuiCol_TabSelected],  colors[ImGuiCol_TitleBg], 0.40f);
     colors[ImGuiCol_TabDimmedSelectedOverline] = ImVec4(0.53f, 0.53f, 0.87f, 0.00f);
+    colors[ImGuiCol_DockingPreview]         = colors[ImGuiCol_Header] * ImVec4(1.0f, 1.0f, 1.0f, 0.7f);
+    colors[ImGuiCol_DockingEmptyBg]         = ImVec4(0.20f, 0.20f, 0.20f, 1.00f);
     colors[ImGuiCol_PlotLines]              = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
     colors[ImGuiCol_PlotLinesHovered]       = ImVec4(0.90f, 0.70f, 0.00f, 1.00f);
     colors[ImGuiCol_PlotHistogram]          = ImVec4(0.90f, 0.70f, 0.00f, 1.00f);
@@ -368,6 +372,8 @@ void ImGui::StyleColorsLight(ImGuiStyle* dst)
     colors[ImGuiCol_TabDimmed]              = ImLerp(colors[ImGuiCol_Tab],          colors[ImGuiCol_TitleBg], 0.80f);
     colors[ImGuiCol_TabDimmedSelected]      = ImLerp(colors[ImGuiCol_TabSelected],  colors[ImGuiCol_TitleBg], 0.40f);
     colors[ImGuiCol_TabDimmedSelectedOverline] = ImVec4(0.26f, 0.59f, 1.00f, 0.00f);
+    colors[ImGuiCol_DockingPreview]         = colors[ImGuiCol_Header] * ImVec4(1.0f, 1.0f, 1.0f, 0.7f);
+    colors[ImGuiCol_DockingEmptyBg]         = ImVec4(0.20f, 0.20f, 0.20f, 1.00f);
     colors[ImGuiCol_PlotLines]              = ImVec4(0.39f, 0.39f, 0.39f, 1.00f);
     colors[ImGuiCol_PlotLinesHovered]       = ImVec4(1.00f, 0.43f, 0.35f, 1.00f);
     colors[ImGuiCol_PlotHistogram]          = ImVec4(0.90f, 0.70f, 0.00f, 1.00f);
@@ -699,7 +705,7 @@ void ImDrawList::PushTexture(ImTextureRef tex_ref)
     _TextureStack.push_back(tex_ref);
     _CmdHeader.TexRef = tex_ref;
     if (tex_ref._TexData != NULL)
-        IM_ASSERT(tex_ref._TexData->WantDestroyNextFrame == false);
+        IM_ASSERT(tex_ref._TexData->Status != ImTextureStatus_WantDestroy && tex_ref._TexData->Status != ImTextureStatus_Destroyed);
     _OnChangedTexture();
 }
 
@@ -2696,7 +2702,7 @@ ImFontAtlas::~ImFontAtlas()
 }
 
 // You probably should not call this directly. It is not well specified.
-// If you want to replace all your font mid-frame, most likely you should instead call ClearFonts() then load the new font.
+// If you want to replace all your fonts mid-frame, most likely you should instead call ClearFonts() then load the new fonts.
 // Calling this mid-frame will discard the CPU-side copy of the texture data which is generally unreliable as you may have textures queued for creation or updates.
 void ImFontAtlas::Clear()
 {
@@ -2780,7 +2786,7 @@ static void ImFontAtlasBuildUpdateRendererHasTexturesFromContext(ImFontAtlas* at
 
 // Called by NewFrame() for atlases owned by a context.
 // If you manually manage font atlases, you'll need to call this yourself.
-// - 'frame_count' needs to be provided because we can gc/prioritize baked font based on their age.
+// - 'frame_count' needs to be provided because we can gc/prioritize baked fonts based on their age.
 // - 'frame_count' may not match those of all imgui contexts using this atlas, as contexts may be updated as different frequencies. But generally you can use ImGui::GetFrameCount() on one of your context.
 void ImFontAtlasUpdateNewFrame(ImFontAtlas* atlas, int frame_count, bool renderer_has_textures)
 {
@@ -2813,7 +2819,7 @@ void ImFontAtlasUpdateNewFrame(ImFontAtlas* atlas, int frame_count, bool rendere
     if (atlas->RendererHasTextures)
     {
         atlas->TexIsBuilt = true;
-        if (atlas->Builder == NULL) // This will only happen if font were not already loaded.
+        if (atlas->Builder == NULL) // This will only happen if fonts were not already loaded.
             ImFontAtlasBuildMain(atlas);
     }
     // Legacy backend
@@ -3112,7 +3118,7 @@ ImFont* ImFontAtlas::AddFont(const ImFontConfig* font_cfg_in)
     ImFontAtlasBuildUpdatePointers(this); // Pointers to Sources are otherwise dangling after we called Sources.push_back().
 
     // Sanity check
-    // We don't round cfg.SizePixels yet as relative size of merged font are used afterwards.
+    // We don't round cfg.SizePixels yet as relative size of merged fonts are used afterwards.
     if (font_cfg->GlyphExcludeRanges != NULL)
     {
         int size = 0;
@@ -3153,7 +3159,7 @@ ImFont* ImFontAtlas::AddFont(const ImFontConfig* font_cfg_in)
     return font;
 }
 
-// Default font TTF is compressed with stb_compress then base85 encoded (see misc/font/binary_to_compressed_c.cpp for encoder)
+// Default font TTF is compressed with stb_compress then base85 encoded (see misc/fonts/binary_to_compressed_c.cpp for encoder)
 static unsigned int stb_decompress_length(const unsigned char* input);
 static unsigned int stb_decompress(unsigned char* output, const unsigned char* input, unsigned int length);
 static unsigned int Decode85Byte(char c)                                    { return c >= '\\' ? c-36 : c-35; }
@@ -3324,7 +3330,7 @@ void ImFontAtlasBuildNotifySetFont(ImFontAtlas* atlas, ImFont* old_font, ImFont*
         if (ImGuiContext* ctx = shared_data->Context)
         {
             // While this should work either way, we save ourselves the bother / debugging confusion of running ImGui code so early when it is not needed.
-            // Also fixes erroneously rewriting style.FontSizeBase during init if adding default font.
+            // Also fixes erroneously rewriting style.FontSizeBase during init if adding default fonts.
             if (old_font == NULL && ctx->Font == NULL && ctx->FontSizeBase == 0.0f)
                 continue;
 
@@ -3403,7 +3409,7 @@ void ImFontAtlas::RemoveCustomRect(ImFontAtlasRectId id)
 }
 
 #ifndef IMGUI_DISABLE_OBSOLETE_FUNCTIONS
-// This API does not make sense anymore with scalable font.
+// This API does not make sense anymore with scalable fonts.
 // - Prefer adding a font source (ImFontConfig) using a custom/procedural loader.
 // - You may use ImFontFlags_LockBakedSizes to limit an existing font to known baked sizes:
 //     ImFont* myfont = io.Fonts->AddFontFromFileTTF(....);
@@ -3796,7 +3802,7 @@ static ImFontGlyph* ImFontAtlasBuildSetupFontBakedEllipsis(ImFontAtlas* atlas, I
     ImFontGlyph glyph_in = {};
     ImFontGlyph* glyph = &glyph_in;
     glyph->Codepoint = font->EllipsisChar;
-    glyph->AdvanceX = ImMax(dot_glyph->AdvanceX, dot_glyph->X0 + dot_step * 3.0f - dot_spacing); // FIXME: Slightly odd for normally mono-space font but since this is used for trailing contents.
+    glyph->AdvanceX = ImMax(dot_glyph->AdvanceX, dot_glyph->X0 + dot_step * 3.0f - dot_spacing); // FIXME: Slightly odd for normally mono-space fonts but since this is used for trailing contents.
     glyph->X0 = dot_glyph->X0;
     glyph->Y0 = dot_glyph->Y0;
     glyph->X1 = dot_glyph->X0 + dot_step * 3 - dot_spacing;
@@ -3841,7 +3847,7 @@ static void ImFontAtlasBuildSetupFontBakedFallback(ImFontBaked* baked)
 
 static void ImFontAtlasBuildSetupFontBakedBlanks(ImFontAtlas* atlas, ImFontBaked* baked)
 {
-    // Mark space as always hidden (not strictly correct/necessary. but some e.g. icons font don't have a space. it tends to look neater in previews)
+    // Mark space as always hidden (not strictly correct/necessary. but some e.g. icons fonts don't have a space. it tends to look neater in previews)
     ImFontGlyph* space_glyph = baked->FindGlyphNoFallback((ImWchar)' ');
     if (space_glyph != NULL)
         space_glyph->Visible = false;
@@ -3858,7 +3864,7 @@ static void ImFontAtlasBuildSetupFontBakedBlanks(ImFontAtlas* atlas, ImFontBaked
 }
 
 // Load/identify special glyphs
-// (note that this is called again for font with MergeMode)
+// (note that this is called again for fonts with MergeMode)
 void ImFontAtlasBuildSetupFontSpecialGlyphs(ImFontAtlas* atlas, ImFont* font, ImFontConfig* src)
 {
     IM_UNUSED(atlas);
@@ -3875,7 +3881,7 @@ void ImFontAtlasBuildSetupFontSpecialGlyphs(ImFontAtlas* atlas, ImFont* font, Im
             }
 
     // Setup Ellipsis character. It is required for rendering elided text. We prefer using U+2026 (horizontal ellipsis).
-    // However some old font may contain ellipsis at U+0085. Here we auto-detect most suitable ellipsis character.
+    // However some old fonts may contain ellipsis at U+0085. Here we auto-detect most suitable ellipsis character.
     // FIXME: Note that 0x2026 is rarely included in our font ranges. Because of this we are more likely to use three individual dots.
     const ImWchar ellipsis_chars[] = { src->EllipsisChar, (ImWchar)0x2026, (ImWchar)0x0085 };
     if (font->EllipsisChar == 0)
@@ -4358,7 +4364,7 @@ void ImFontAtlasBuildInit(ImFontAtlas* atlas)
     // Add required texture data
     ImFontAtlasBuildUpdateTexData(atlas);
 
-    // Register font
+    // Register fonts
     ImFontAtlasBuildUpdatePointers(atlas);
 
     // Update UV coordinates etc. stored in bound ImDrawListSharedData instance
@@ -4371,7 +4377,7 @@ void ImFontAtlasBuildInit(ImFontAtlas* atlas)
     ImTextInitClassifiers();
 }
 
-// Destroy builder and all cached glyphs. Do not destroy actual font.
+// Destroy builder and all cached glyphs. Do not destroy actual fonts.
 void ImFontAtlasBuildDestroy(ImFontAtlas* atlas)
 {
     for (ImFont* font : atlas->Fonts)
@@ -5259,7 +5265,7 @@ bool ImFont::IsGlyphRangeUnused(unsigned int c_begin, unsigned int c_last)
 
 // x0/y0/x1/y1 are offset from the character upper-left layout position, in pixels. Therefore x0/y0 are often fairly close to zero.
 // Not to be mistaken with texture coordinates, which are held by u0/v0/u1/v1 in normalized format (0.0..1.0 on each texture axis).
-// - 'src' is not necessarily == 'this->Sources' because multiple source font+configs can be used to build one target font.
+// - 'src' is not necessarily == 'this->Sources' because multiple source fonts+configs can be used to build one target font.
 ImFontGlyph* ImFontAtlasBakedAddFontGlyph(ImFontAtlas* atlas, ImFontBaked* baked, ImFontConfig* src, const ImFontGlyph* in_glyph)
 {
     int glyph_idx = baked->Glyphs.Size;
@@ -6036,6 +6042,7 @@ begin:
 // - RenderArrow()
 // - RenderBullet()
 // - RenderCheckMark()
+// - RenderArrowDockMenu()
 // - RenderArrowPointingAt()
 // - RenderRectFilledInRangeH()
 // - RenderRectFilledWithHole()
@@ -6109,6 +6116,14 @@ void ImGui::RenderArrowPointingAt(ImDrawList* draw_list, ImVec2 pos, ImVec2 half
     case ImGuiDir_Down:  draw_list->AddTriangleFilled(ImVec2(pos.x - half_sz.x, pos.y - half_sz.y), ImVec2(pos.x + half_sz.x, pos.y - half_sz.y), pos, col); return;
     case ImGuiDir_None: case ImGuiDir_COUNT: break; // Fix warnings
     }
+}
+
+// This is less wide than RenderArrow() and we use in dock nodes instead of the regular RenderArrow() to denote a change of functionality,
+// and because the saved space means that the left-most tab label can stay at exactly the same position as the label of a loose window.
+void ImGui::RenderArrowDockMenu(ImDrawList* draw_list, ImVec2 p_min, float sz, ImU32 col)
+{
+    draw_list->AddRectFilled(p_min + ImVec2(sz * 0.20f, sz * 0.15f), p_min + ImVec2(sz * 0.80f, sz * 0.30f), col);
+    RenderArrowPointingAt(draw_list, p_min + ImVec2(sz * 0.50f, sz * 0.85f), ImVec2(sz * 0.30f, sz * 0.40f), ImGuiDir_Down, col);
 }
 
 static inline float ImAcos01(float x)
@@ -6210,26 +6225,33 @@ ImDrawFlags ImGui::CalcRoundingFlagsForRectInRect(const ImRect& r_in, const ImRe
 // Helper for ColorPicker4()
 // NB: This is rather brittle and will show artifact when rounding this enabled if rounded corners overlap multiple cells. Caller currently responsible for avoiding that.
 // Spent a non reasonable amount of time trying to getting this right for ColorButton with rounding+anti-aliasing+ImGuiColorEditFlags_HalfAlphaPreview flag + various grid sizes and offsets, and eventually gave up... probably more reasonable to disable rounding altogether.
-// FIXME: uses ImGui::GetColorU32
-void ImGui::RenderColorRectWithAlphaCheckerboard(ImDrawList* draw_list, ImVec2 p_min, ImVec2 p_max, ImU32 col, float grid_step, ImVec2 grid_off, float rounding, ImDrawFlags flags)
+void ImGui::RenderColorRectWithAlphaCheckerboard(ImDrawList* draw_list, ImVec2 p_min, ImVec2 p_max, ImU32 col, float alpha, float grid_step, ImVec2 grid_off, float rounding, ImDrawFlags flags)
 {
     if ((flags & ImDrawFlags_RoundCornersMask_) == 0)
-        flags = ImDrawFlags_RoundCornersDefault_;
+        flags = ImDrawFlags_RoundCornersAll;
     if (((col & IM_COL32_A_MASK) >> IM_COL32_A_SHIFT) < 0xFF)
     {
-        ImU32 col_bg1 = GetColorU32(ImAlphaBlendColors(IM_COL32(128, 128, 128, 255), col));
-        ImU32 col_bg2 = GetColorU32(ImAlphaBlendColors(IM_COL32(204, 204, 204, 255), col));
-        draw_list->AddRectFilled(p_min, p_max, col_bg1, rounding, flags);
+        IM_ASSERT(alpha >= 0.0f && alpha <= 1.0f);
+        const ImU32 a_mask = (ImU32)(alpha * 255.0f) << IM_COL32_A_SHIFT;
+        ImU32 col_bg1 = (ImAlphaBlendColors(IM_COL32(128, 128, 128, 255), col) & ~IM_COL32_A_MASK) | a_mask;
+        ImU32 col_bg2 = (ImAlphaBlendColors(IM_COL32(204, 204, 204, 255), col) & ~IM_COL32_A_MASK) | a_mask;
+        const bool dual_layer = (alpha == 1.0f); // Dual layer is faster but incorrect if blending.
+        if (dual_layer)
+            draw_list->AddRectFilled(p_min, p_max, col_bg1, rounding, flags);
 
         int yi = 0;
         for (float y = p_min.y + grid_off.y; y < p_max.y; y += grid_step, yi++)
         {
-            float y1 = ImClamp(y, p_min.y, p_max.y), y2 = ImMin(y + grid_step, p_max.y);
+            float y1 = ImClamp((float)(int)y, p_min.y, p_max.y), y2 = ImMin((float)(int)(y + grid_step), p_max.y);
             if (y2 <= y1)
                 continue;
-            for (float x = p_min.x + grid_off.x + ((yi ^ 1)  & 1) * grid_step; x < p_max.x; x += grid_step * 2.0f)
+
+            const float x_start_off = dual_layer ? (((yi ^ 1) & 1) * grid_step) : 0.0f;
+            const float x_step = dual_layer ? (grid_step * 2.0f) : (grid_step);
+            int xi = 0;
+            for (float x = p_min.x + grid_off.x + x_start_off; x < p_max.x; x += x_step, xi++)
             {
-                float x1 = ImClamp(x, p_min.x, p_max.x), x2 = ImMin(x + grid_step, p_max.x);
+                float x1 = ImClamp((float)(int)x, p_min.x, p_max.x), x2 = ImMin((float)(int)(x + grid_step), p_max.x);
                 if (x2 <= x1)
                     continue;
                 ImDrawFlags cell_flags = ImDrawFlags_RoundCornersNone; // FIXME: Could use CalcRoundingFlagsForRectInRect()
@@ -6238,7 +6260,8 @@ void ImGui::RenderColorRectWithAlphaCheckerboard(ImDrawList* draw_list, ImVec2 p
 
                 // Combine flags
                 cell_flags = (flags == ImDrawFlags_RoundCornersNone || cell_flags == ImDrawFlags_RoundCornersNone) ? ImDrawFlags_RoundCornersNone : (cell_flags & flags);
-                draw_list->AddRectFilled(ImVec2(x1, y1), ImVec2(x2, y2), col_bg2, rounding, cell_flags);
+                ImU32 col_bg = dual_layer ? col_bg2 : (((yi + xi) & 1) ? col_bg2 : col_bg1);
+                draw_list->AddRectFilled(ImVec2(x1, y1), ImVec2(x2, y2), col_bg, rounding, cell_flags);
             }
         }
     }
@@ -6252,7 +6275,7 @@ void ImGui::RenderColorRectWithAlphaCheckerboard(ImDrawList* draw_list, ImVec2 p
 // [SECTION] Decompression code
 //-----------------------------------------------------------------------------
 // Compressed with stb_compress() then converted to a C array and encoded as base85.
-// Use the program in misc/font/binary_to_compressed_c.cpp to create the array from a TTF file.
+// Use the program in misc/fonts/binary_to_compressed_c.cpp to create the array from a TTF file.
 // The purpose of encoding as base85 instead of "0x00,0x01,..." style is only save on _source code_ size.
 // Decompression from stb.h (public domain) by Sean Barrett https://github.com/nothings/stb/blob/master/stb.h
 //-----------------------------------------------------------------------------

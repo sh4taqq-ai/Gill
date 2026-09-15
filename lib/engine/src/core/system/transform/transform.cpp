@@ -49,14 +49,14 @@ const mathpp::mat4f& TransformSystem::GetWorldTransform(Entity entity) {
 
 
 void TransformSystem::AddTransform(Entity entity) {
-    TransformComponent transformComponent;
-    WorldTransformComponent worldTransformComponent;
+    comp::TransformComponent transformComponent;
+    comp::WorldTransformComponent worldTransformComponent;
     localTransforms.Insert(entity,transformComponent);
     worldTransforms.Insert(entity,worldTransformComponent);
 
 }
 
-const TransformComponent &TransformSystem::GetTransform(Entity entity) const {
+const comp::TransformComponent &TransformSystem::GetTransform(Entity entity) const {
     return localTransforms.Get(entity);
 }
 

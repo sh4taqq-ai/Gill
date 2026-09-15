@@ -15,7 +15,7 @@ public:
     void Init(Hierarchy* hierarchy);
     void AddTransform(Entity entity);
     void RemoveTransform(Entity entity);
-    const TransformComponent& GetTransform(Entity entity) const;
+    const comp::TransformComponent& GetTransform(Entity entity) const;
     const mathpp::mat4f& GetWorldTransform(Entity entity);
     const mathpp::quatf& GetWorldRotation(Entity entity);
     void SetTransform(Entity entity, const mathpp::vec3f& pos, const mathpp::quatf& rot, const mathpp::vec3f& scale);
@@ -29,7 +29,7 @@ private:
     void MarkDirty(Entity entity);
     void CalculateWorldTransform( Entity entity);
     Hierarchy* _hierarchy;
-    SparseSet<TransformComponent> localTransforms;
-    SparseSet<WorldTransformComponent> worldTransforms;
+    SparseSet<comp::TransformComponent> localTransforms;
+    SparseSet<comp::WorldTransformComponent> worldTransforms;
 
 };

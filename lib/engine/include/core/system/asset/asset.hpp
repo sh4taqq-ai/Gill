@@ -3,46 +3,48 @@
 #include <queue>
 #include <cassert>
 #include <cstdint>
+#include "assetID.hpp"
 
-using AssetID = uint32_t;
+
 
 template<typename T>
 class AssetManager {
 public:
-    AssetID Load(T asset) {
-        AssetID id;
-        if (!mAvailableIDs.empty()) {
-            id = mAvailableIDs.front();
-            mAvailableIDs.pop();
-            mAssets[id] = std::move(asset);
+    AssetHandle Load(T asset) {
+        uint32_t index;
+        if (!mAvailableIndices.empty()) {
+            index = mAvailableIndices.front();
+            mAvailableIndices.pop();
+            mSlots[index].asset = std::move(asset);
+            mSlots[index].alive = true;
         } else {
-            id = static_cast<AssetID>(mAssets.size());
-            mAssets.push_back(std::move(asset));
+            index = static_cast<uint32_t>(mSlots.size());
+            mSlots.push_back(Slot{std::move(asset), 0, true});
         }
-        return id;
+        return AssetHandle{index, mSlots[index].generation};
     }
 
-    T* Get(AssetID id) {
-        assert(id < mAssets.size() && "AssetID out of range.");
-        return &mAssets[id];
+    T* Get(AssetHandle h)             { return IsValid(h) ? &mSlots[h.index].asset : nullptr; }
+    const T* Get(AssetHandle h) const { return IsValid(h) ? &mSlots[h.index].asset : nullptr; }
+
+    void Unload(AssetHandle h) {
+        if (!IsValid(h)) return;
+        mSlots[h.index].alive = false;
+        mSlots[h.index].generation++;
+        mAvailableIndices.push(h.index);
     }
 
-    const T* Get(AssetID id) const {
-        assert(id < mAssets.size() && "AssetID out of range.");
-        return &mAssets[id];
-    }
-
-
-    void Unload(AssetID id) {
-        assert(id < mAssets.size() && "AssetID out of range.");
-        mAvailableIDs.push(id);
-    }
-
-    bool Has(AssetID id) const {
-        return id < mAssets.size();
-    }
+    bool Has(AssetHandle h) const { return IsValid(h); }
 
 private:
-    std::vector<T> mAssets;
-    std::queue<AssetID> mAvailableIDs;
+    struct Slot { T asset; uint32_t generation = 0; bool alive = false; };
+
+    bool IsValid(AssetHandle h) const {
+        return h.index < mSlots.size()
+            && mSlots[h.index].alive
+            && mSlots[h.index].generation == h.generation;
+    }
+
+    std::vector<Slot> mSlots;
+    std::queue<uint32_t> mAvailableIndices;
 };

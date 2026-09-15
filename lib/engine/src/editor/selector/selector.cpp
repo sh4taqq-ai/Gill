@@ -1,4 +1,6 @@
 #include "editor/selector/selector.hpp"
+#include "component/mesh.hpp"
+#include "core/system/mesh/mesh.hpp"
 #include "render/shader/shader.hpp"
 #include "scene/scene.hpp"
 #include "core/system/transform/transform.hpp"
@@ -26,14 +28,14 @@ void Selector::Init(unsigned int width, unsigned int height) {
 
 
 
-void Selector::RenderScene(const Scene* scene, const mathpp::mat4f& view, const mathpp::mat4f& projection,TransformSystem* transformSystem) {
+void Selector::RenderScene(const Scene* scene, const mathpp::mat4f& view, const mathpp::mat4f& projection,TransformSystem* transformSystem,MeshSystem* meshSystem) {
     GLint clearValue = -1;
     glBindFramebuffer(GL_FRAMEBUFFER, FBO);
     glClearBufferiv(GL_COLOR, 0, &clearValue);
     glClear(GL_DEPTH_BUFFER_BIT);
     selectShader->Use();
-    scene->ForEach<MeshComponent>([this, scene, &view, &projection,transformSystem](Entity entity,const MeshComponent& meshComp) {
-       RenderEntityID(scene, entity, meshComp, view, projection,transformSystem);
+    scene->ForEach<comp::MeshComponent>([this, scene, &view, &projection,transformSystem,meshSystem](Entity entity,const comp::MeshComponent& meshComp) {
+       RenderEntityID(scene, entity, meshComp, view, projection,transformSystem,meshSystem);
    });
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -53,8 +55,8 @@ std::optional<Entity> Selector::ReadEntityAt(int x, int y) const {
     return static_cast<Entity>(pickedID);
 }
 
-void Selector::RenderEntityID(const Scene *scene,Entity entity, const MeshComponent &meshComp, const mathpp::mat4f &view, const mathpp::mat4f &projection,TransformSystem* transformSystem) {
-    auto mesh = scene->GetMesh(meshComp.meshID);
+void Selector::RenderEntityID(const Scene *scene,Entity entity, const comp::MeshComponent &meshComp, const mathpp::mat4f &view, const mathpp::mat4f &projection,TransformSystem* transformSystem,MeshSystem* meshSystem) {
+    auto mesh = meshSystem->GetMesh(meshComp.meshID);
     selectShader->setMat4f("model",transformSystem->GetWorldTransform(entity) );
     selectShader->setMat4f("view", view);
     selectShader->setMat4f("projection", projection);

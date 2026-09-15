@@ -1,15 +1,22 @@
 #pragma once
+#include <magic_enum.hpp>
 #include <memory>
 #include "mesh.hpp"
 #include "render/data/vertex.hpp"
+#include "magic_enum.hpp"
 
-enum class PrimitiveType {
+enum class PrimitiveType{
     Cube,
     Plane,
     Sphere,
     Cylinder,
     Cone
 };
+
+
+
+
+
 
 
 Mesh inline CreatePlane() {

@@ -1,8 +1,9 @@
 #pragma once
-#include "assetID.hpp"
+#include "core/system/asset/assetID.hpp"
 
+namespace comp {
+ struct MeshComponent {
+  AssetHandle meshID;
+ };
+}
 
-
-struct MeshComponent {
- AssetID meshID = INVALID_ASSETID;
-};

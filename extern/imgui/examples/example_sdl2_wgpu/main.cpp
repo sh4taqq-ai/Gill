@@ -92,23 +92,23 @@ int main(int, char**)
     ImGui_ImplWGPU_Init(&init_info);
 
     // Load Fonts
-    // - If font are not explicitly loaded, Dear ImGui will select an embedded font: either AddFontDefaultVector() or AddFontDefaultBitmap().
+    // - If fonts are not explicitly loaded, Dear ImGui will select an embedded font: either AddFontDefaultVector() or AddFontDefaultBitmap().
     //   This selection is based on (style.FontSizeBase * style.FontScaleMain * style.FontScaleDpi) reaching a small threshold.
-    // - You can load multiple font and use ImGui::PushFont()/PopFont() to select them.
+    // - You can load multiple fonts and use ImGui::PushFont()/PopFont() to select them.
     // - If a file cannot be loaded, AddFont functions will return a nullptr. Please handle those errors in your code (e.g. use an assertion, display an error and quit).
     // - Read 'docs/FONTS.md' for more instructions and details.
     // - Use '#define IMGUI_ENABLE_FREETYPE' in your imconfig file to use FreeType for higher quality font rendering.
     // - Remember that in C/C++ if you want to include a backslash \ in a string literal you need to write a double backslash \\ !
-    // - Our Emscripten build process allows embedding font to be accessible at runtime from the "font/" folder. See Makefile.emscripten for details.
+    // - Our Emscripten build process allows embedding fonts to be accessible at runtime from the "fonts/" folder. See Makefile.emscripten for details.
     //style.FontSizeBase = 20.0f;
     //io.Fonts->AddFontDefaultVector();
     //io.Fonts->AddFontDefaultBitmap();
 #ifndef IMGUI_DISABLE_FILE_FUNCTIONS
-    //io.Fonts->AddFontFromFileTTF("font/segoeui.ttf");
-    //io.Fonts->AddFontFromFileTTF("font/DroidSans.ttf");
-    //io.Fonts->AddFontFromFileTTF("font/Roboto-Medium.ttf");
-    //io.Fonts->AddFontFromFileTTF("font/Cousine-Regular.ttf");
-    //ImFont* font = io.Fonts->AddFontFromFileTTF("font/ArialUni.ttf");
+    //io.Fonts->AddFontFromFileTTF("fonts/segoeui.ttf");
+    //io.Fonts->AddFontFromFileTTF("fonts/DroidSans.ttf");
+    //io.Fonts->AddFontFromFileTTF("fonts/Roboto-Medium.ttf");
+    //io.Fonts->AddFontFromFileTTF("fonts/Cousine-Regular.ttf");
+    //ImFont* font = io.Fonts->AddFontFromFileTTF("fonts/ArialUni.ttf");
     //IM_ASSERT(font != nullptr);
 #endif
 
@@ -330,29 +330,25 @@ static WGPUDevice RequestDevice(wgpu::Instance& instance, wgpu::Adapter& adapter
 static void handle_request_adapter(WGPURequestAdapterStatus status, WGPUAdapter adapter, WGPUStringView message, void* userdata1, void* userdata2)
 {
     IM_UNUSED(userdata2);
-    if (status == WGPURequestAdapterStatus_Success)
-    {
-        WGPUAdapter* extAdapter = (WGPUAdapter*)userdata1;
-        *extAdapter = adapter;
-    }
-    else
+    if (status != WGPURequestAdapterStatus_Success)
     {
         printf("Request_adapter status=%#.8x message=%.*s\n", status, (int)message.length, message.data);
+        return;
     }
+    WGPUAdapter* extAdapter = (WGPUAdapter*)userdata1;
+    *extAdapter = adapter;
 }
 
 static void handle_request_device(WGPURequestDeviceStatus status, WGPUDevice device, WGPUStringView message, void* userdata1, void* userdata2)
 {
     IM_UNUSED(userdata2);
-    if (status == WGPURequestDeviceStatus_Success)
-    {
-        WGPUDevice* extDevice = (WGPUDevice*)userdata1;
-        *extDevice = device;
-    }
-    else
+    if (status != WGPURequestDeviceStatus_Success)
     {
         printf("Request_device status=%#.8x message=%.*s\n", status, (int)message.length, message.data);
+        return;
     }
+    WGPUDevice* extDevice = (WGPUDevice*)userdata1;
+    *extDevice = device;
 }
 
 static WGPUAdapter RequestAdapter(WGPUInstance& instance)
@@ -366,8 +362,10 @@ static WGPUAdapter RequestAdapter(WGPUInstance& instance)
     adapterCallbackInfo.userdata1 = &local_adapter;
 
     WGPUFuture future = wgpuInstanceRequestAdapter(instance, &adapter_options, adapterCallbackInfo);
+#if !defined(IMGUI_IMPL_WEBGPU_BACKEND_WGPU)
     WGPUFutureWaitInfo waitInfo = { future, false };
     wgpuInstanceWaitAny(instance, 1, &waitInfo, ~0ull);
+#endif
     IM_ASSERT(local_adapter && "Error on Adapter request");
     return local_adapter;
 }
@@ -379,9 +377,14 @@ static WGPUDevice RequestDevice(WGPUInstance& instance, WGPUAdapter& adapter)
     deviceCallbackInfo.mode = WGPUCallbackMode_WaitAnyOnly;
     deviceCallbackInfo.callback = handle_request_device;
     deviceCallbackInfo.userdata1 = &local_device;
+
     WGPUFuture future = wgpuAdapterRequestDevice(adapter, nullptr, deviceCallbackInfo);
+#if !defined(IMGUI_IMPL_WEBGPU_BACKEND_WGPU)
     WGPUFutureWaitInfo waitInfo = { future, false };
     wgpuInstanceWaitAny(instance, 1, &waitInfo, ~0ull);
+#else
+    IM_UNUSED(instance);
+#endif
     IM_ASSERT(local_device && "Error on Device request");
     return local_device;
 }
@@ -437,7 +440,7 @@ static bool InitWGPU(SDL_Window* window)
 
 #if defined(IMGUI_IMPL_WEBGPU_BACKEND_WGPU)
     wgpuSetLogCallback(
-        [](WGPULogLevel level, WGPUStringView msg, void* userdata) { fprintf(stderr, "%s: %.*s\n", ImGui_ImplWGPU_GetLogLevelName(level), (int)msg.length, msg.data); }, nullptr
+        [](WGPULogLevel level, WGPUStringView msg, void*) { fprintf(stderr, "%s: %.*s\n", ImGui_ImplWGPU_GetLogLevelName(level), (int)msg.length, msg.data); }, nullptr
     );
     wgpuSetLogLevel(WGPULogLevel_Warn);
 #endif

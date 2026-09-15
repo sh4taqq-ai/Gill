@@ -13,7 +13,6 @@
 class Scene {
 public:
 
-    Scene();
     ~Scene();
 
 
@@ -56,7 +55,7 @@ T* TryGetComponent(Entity entity);
 
 
 
-    AssetID LoadMesh(Mesh mesh) { return meshManager.Load(std::move(mesh)); }
+    AssetHandle LoadMesh(Mesh mesh) { return meshManager.Load(std::move(mesh)); }
 
 
 
@@ -81,86 +80,124 @@ T* TryGetComponent(Entity entity);
     std::optional<Entity> selected;
     EntityManager entityManager;
     AssetManager<Mesh> meshManager;
-    SparseSet<MeshComponent> meshes;
-    SparseSet<SunlightComponent> sunlights;
+    SparseSet<comp::MeshComponent> meshes;
+    SparseSet<comp::SunlightComponent> sunlights;
+    SparseSet<comp::MaterialComponent> materials;
 };
 
 
 
 
     template<>
-    inline SunlightComponent& Scene::GetComponent<SunlightComponent>(Entity entity) {
+    inline comp::SunlightComponent& Scene::GetComponent<comp::SunlightComponent>(Entity entity) {
         return sunlights.Get(entity);
     }
     template<>
-    inline const SunlightComponent& Scene::GetComponent<SunlightComponent>(Entity entity) const {
+    inline const comp::SunlightComponent& Scene::GetComponent<comp::SunlightComponent>(Entity entity) const {
         return sunlights.Get(entity);
     }
     template<>
-    inline MeshComponent& Scene::GetComponent<MeshComponent>(Entity entity) {
+    inline comp::MeshComponent& Scene::GetComponent<comp::MeshComponent>(Entity entity) {
         return meshes.Get(entity);
     }
     template<>
-    inline const MeshComponent& Scene::GetComponent<MeshComponent>(Entity entity) const {
+    inline const comp::MeshComponent& Scene::GetComponent<comp::MeshComponent>(Entity entity) const {
         return meshes.Get(entity);
+    }
+    template<>
+    inline comp::MaterialComponent& Scene::GetComponent<comp::MaterialComponent>(Entity entity) {
+        return materials.Get(entity);
+    }
+    template<>
+    inline const comp::MaterialComponent& Scene::GetComponent<comp::MaterialComponent>(Entity entity) const {
+        return materials.Get(entity);
     }
 
     template<>
-    inline MeshComponent* Scene::TryGetComponent<MeshComponent>(Entity entity) {
+    inline comp::MeshComponent* Scene::TryGetComponent<comp::MeshComponent>(Entity entity) {
         if (meshes.Has(entity)) {
             return &meshes.Get(entity);
         }
         return nullptr;
     }
     template<>
-    inline const MeshComponent* Scene::TryGetComponent<MeshComponent>(Entity entity) const {
+    inline const comp::MeshComponent* Scene::TryGetComponent<comp::MeshComponent>(Entity entity) const {
         if (meshes.Has(entity)) {
             return &meshes.Get(entity);
         }
         return nullptr;
     }
     template<>
-    inline SunlightComponent* Scene::TryGetComponent<SunlightComponent>(Entity entity) {
+    inline comp::SunlightComponent* Scene::TryGetComponent<comp::SunlightComponent>(Entity entity) {
         if (sunlights.Has(entity)) {
             return &sunlights.Get(entity);
         }
         return nullptr;
     }
     template<>
-    inline const SunlightComponent* Scene::TryGetComponent<SunlightComponent>(Entity entity) const {
+    inline const comp::SunlightComponent* Scene::TryGetComponent<comp::SunlightComponent>(Entity entity) const {
         if (sunlights.Has(entity)) {
             return &sunlights.Get(entity);
         }
         return nullptr;
     }
     template<>
-    inline void Scene::InsertComponent<MeshComponent>(Entity entity,const MeshComponent& component) {
+    inline const comp::MaterialComponent* Scene::TryGetComponent<comp::MaterialComponent>(Entity entity) const {
+        if (materials.Has(entity)) {
+            return &materials.Get(entity);
+        }
+        return nullptr;
+    }
+
+    template<>
+    inline comp::MaterialComponent*  Scene::TryGetComponent<comp::MaterialComponent>(Entity entity) {
+        if (materials.Has(entity)) {
+            return &materials.Get(entity);
+        }
+        return nullptr;
+    }
+    template<>
+    inline void Scene::InsertComponent<comp::MeshComponent>(Entity entity,const comp::MeshComponent& component) {
         meshes.Insert(entity, component);
     }
     template<>
-    inline void Scene::RemoveComponent<MeshComponent>(Entity entity) {
+    inline void Scene::InsertComponent<comp::MaterialComponent>(Entity entity,const comp::MaterialComponent& component) {
+        materials.Insert(entity,component);
+    }
+    template<>
+    inline void Scene::RemoveComponent<comp::MeshComponent>(Entity entity) {
         meshes.Remove(entity);
     }
     template<>
-    inline void Scene::InsertComponent<SunlightComponent>(Entity entity,const SunlightComponent& component) {
+    inline void Scene::InsertComponent<comp::SunlightComponent>(Entity entity,const comp::SunlightComponent& component) {
         sunlights.Insert(entity, component);
     }
     template<>
-    inline void Scene::RemoveComponent<SunlightComponent>(Entity entity) {
+    inline void Scene::RemoveComponent<comp::SunlightComponent>(Entity entity) {
         sunlights.Remove(entity);
+    }
+    template<>
+    inline void Scene::RemoveComponent<comp::MaterialComponent>(Entity entity) {
+        materials.Remove(entity);
     }
 
     template<>
-    inline void Scene::ForEach<MeshComponent>(std::function<void(Entity entity,const  MeshComponent& component)> func) const{
+    inline void Scene::ForEach<comp::MeshComponent>(std::function<void(Entity entity,const  comp::MeshComponent& component)> func) const{
         for (size_t it = 0; it<meshes.Size();it++) {
             func(meshes.GetEntity(it), meshes[it]);
         }
     }
 
     template<>
-    inline void Scene::ForEach<SunlightComponent>(std::function<void(Entity entity, const SunlightComponent& component)> func) const {
+    inline void Scene::ForEach<comp::SunlightComponent>(std::function<void(Entity entity, const comp::SunlightComponent& component)> func) const {
         for (size_t it = 0; it<sunlights.Size();it++) {
             func(sunlights.GetEntity(it), sunlights[it]);
+        }
+    }
+    template<>
+    inline void Scene::ForEach<comp::MaterialComponent>(std::function<void(Entity entity, const comp::MaterialComponent& component)> func) const {
+        for (size_t it = 0; it<materials.Size();it++) {
+            func(materials.GetEntity(it), materials[it]);
         }
     }
 

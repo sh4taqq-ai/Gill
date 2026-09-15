@@ -17,6 +17,18 @@ set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(glfw)
 
+include(FetchContent)
+
+FetchContent_Declare(
+        magic_enum
+        GIT_REPOSITORY https://github.com/Neargye/magic_enum.git
+        GIT_TAG        v0.9.5
+)
+
+FetchContent_MakeAvailable(magic_enum)
+
+
+
 add_subdirectory(extern/glad)
 add_subdirectory(extern/imgui)
 add_subdirectory(extern/stb_image)
@@ -43,5 +55,5 @@ add_dependencies(gill copy_assets)
 
 
 
-target_link_libraries(gill PRIVATE glad engine)
+target_link_libraries(gill PRIVATE glad engine magic_enum::magic_enum)
 

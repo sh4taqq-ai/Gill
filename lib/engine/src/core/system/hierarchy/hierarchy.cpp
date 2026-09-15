@@ -1,14 +1,14 @@
 #include "core/system/hierarchy/hierarchy.hpp"
 
 void Hierarchy::SetParent(Entity child, Entity parent) {
-    ParentComponent parentComponent;
+    comp::ParentComponent parentComponent;
     parentComponent.SetParent(parent);
     if (child == parent || IsDescendant(parent, child)) {
         return;
     }
 
     if (parents.Has(child)) {
-        ParentComponent& oldParentComponent = parents.Get(child);
+        comp::ParentComponent& oldParentComponent = parents.Get(child);
         RemoveChild(oldParentComponent.parentEntity, child);
     }
 
@@ -28,12 +28,12 @@ bool Hierarchy::IsDescendant(Entity potentialDescendant, Entity of) {
 
 void Hierarchy::InsertChild(Entity parent, Entity child) {
     if (!children.Has(parent)) {
-        ChildComponent childComp;
+        comp::ChildComponent childComp;
         childComp.AddChild(child);
         children.Insert(parent,childComp);
     }
     else {
-        ChildComponent& childe = children.Get(parent);
+        comp::ChildComponent& childe = children.Get(parent);
         childe.AddChild(child);
     }
 }
@@ -56,7 +56,7 @@ std::vector<Entity> Hierarchy::GetChild(Entity parent) {
 
 void Hierarchy::RemoveChild(Entity parent, Entity child) {
     if (children.Has(parent)) {
-        ChildComponent& childComponent = children.Get(parent);
+        comp::ChildComponent& childComponent = children.Get(parent);
         childComponent.RemoveChild(child);
         RemoveParent(child);
         if (childComponent.IsEmpty()) {
@@ -67,7 +67,7 @@ void Hierarchy::RemoveChild(Entity parent, Entity child) {
 
 void Hierarchy::RemoveAllChildren(Entity parent) {
     if (children.Has(parent)) {
-        ChildComponent& childComponent = children.Get(parent);
+        comp::ChildComponent& childComponent = children.Get(parent);
         for (auto child : childComponent.children) {
             RemoveParent(child);
         }

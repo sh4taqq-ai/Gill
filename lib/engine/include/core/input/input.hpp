@@ -1,5 +1,6 @@
 #pragma once
 #include "mathpp.hpp"
+#include <array>
 #include  "core/window/window.hpp"
 #include "core/component/event/event.hpp"
 
@@ -14,6 +15,8 @@ public:
     Input(Window* window);
     void Update();
     bool IsKeyDown( int Key) const;
+    bool IsKeyPressed( int key) const;
+    bool IsKeyUp( int key) const;
     bool IsMouseButtonDown( int Button) const;
     void GetScroll(mathpp::vec2f& scroll);
     void SetCursorMode(int mode);
@@ -28,4 +31,7 @@ private:
     bool firstUpdate = true;
     bool wasHeld = false;
     Window* window_;
+    static constexpr int MaxKeys = GLFW_KEY_LAST + 1;
+    std::array<bool,MaxKeys> currKeys = {};
+    std::array<bool,MaxKeys> prevKeys = {};
 };

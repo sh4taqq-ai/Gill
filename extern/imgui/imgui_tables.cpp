@@ -883,7 +883,7 @@ void ImGui::TableUpdateLayout(ImGuiTable* table)
 
     // Handle DPI/font resize
     // This is designed to facilitate DPI changes with the assumption that e.g. style.CellPadding has been scaled as well.
-    // It will also react to changing font with mixed results. It doesn't need to be perfect but merely provide a decent transition.
+    // It will also react to changing fonts with mixed results. It doesn't need to be perfect but merely provide a decent transition.
     // FIXME-DPI: Provide consistent standards for reference size. Perhaps using g.CurrentDpiScale would be more self explanatory.
     // This is will lead us to non-rounded WidthRequest in columns, which should work but is a poorly tested path.
     const float new_ref_scale_unit = g.FontSize; // g.Font->GetCharAdvance('A') ?
@@ -3974,6 +3974,8 @@ void ImGui::TableSaveSettings(ImGuiTable* table)
         if (column->IsUserEnabled != ((column->Flags & ImGuiTableColumnFlags_DefaultHide) == 0))
             settings->SaveFlags |= ImGuiTableFlags_Hideable;
     }
+    if (table->Flags & ImGuiTableFlags_Sortable)
+        settings->SaveFlags |= ImGuiTableFlags_Sortable | ImGuiTableFlags_Reorderable;
     settings->SaveFlags &= table->Flags;
     settings->RefScale = save_ref_scale ? table->RefScale : 0.0f;
 

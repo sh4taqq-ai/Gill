@@ -6,6 +6,7 @@
 #include "../include/editor/gizmo/gizmo.hpp"
 
 
+class Renderer;
 class GizmoController;
 class Input;
 class UIManager;
@@ -16,14 +17,15 @@ class Selector;
 class Camera;
 class TransformSystem;
 class Hierarchy;
-
+class MeshSystem;
+class MaterialSystem;
 
 using MouseEvent = EventDelegate<int,int>;
 
 class Editor {
 public:
     Editor();
-    void Init(float width, float height,Window* window,Scene* scene,const mathpp::mat4f& projection,Camera* camera,TransformSystem* transformSystem,Hierarchy* hierarchy);
+    void Init(float width, float height,Window* window,Scene* scene,const mathpp::mat4f& projection,Camera* camera,TransformSystem* transformSystem,Hierarchy* hierarchy,MeshSystem* meshSystem, MaterialSystem* materialSystem,Renderer* renderer);
     void Run(float deltaT);
     void ShutDown();
     void OnMouseDown(int mx, int my);
@@ -35,6 +37,7 @@ private:
 
     void TrySelect(int mx, int my);
     float deltaTime;
+
     std::unique_ptr<Gizmo> gizmo;
     std::unique_ptr<GridRenderer> gridRenderer;
     std::unique_ptr<Input> input;
@@ -46,7 +49,10 @@ private:
     Scene* _scene;
     Window* _window;
     GizmoData gizmoData;
+    MeshSystem* _meshSystem;
+    MaterialSystem* _materialSystem;
     TransformSystem* _transformSystem;
+    Renderer* _renderer;
     std::vector<std::pair<MouseEvent*, MouseEvent::Handle>> _handles;
     mathpp::mat4f proj;
 };

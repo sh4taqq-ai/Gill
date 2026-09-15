@@ -5,6 +5,8 @@
 #include "core/component/camera/camera.hpp"
 #include "core/system/transform/transform.hpp"
 #include "core/system/hierarchy/hierarchy.hpp"
+#include "core/system/material/material.hpp"
+#include "core/system/mesh/mesh.hpp"
 
 void Engine::Init(unsigned int width, unsigned int height,Camera* camera,Scene* scene) {
     _cam = camera;
@@ -12,8 +14,10 @@ void Engine::Init(unsigned int width, unsigned int height,Camera* camera,Scene* 
     renderer = std::make_unique<Renderer>();
     transformSystem = std::make_unique<TransformSystem>();
     hierarchy = std::make_unique<Hierarchy>();
+    meshSystem = std::make_unique<MeshSystem>();
+    materialSystem = std::make_unique<MaterialSystem>();
     transformSystem->Init(hierarchy.get());
-    renderer->Init(transformSystem.get());
+    renderer->Init(transformSystem.get(),meshSystem.get(),materialSystem.get());
     wdth = width;
     hght = height;
 
@@ -41,4 +45,16 @@ TransformSystem *Engine::GetTransformSystem() {
 
 Hierarchy *Engine::GetHierarchy() {
     return hierarchy.get();
+}
+
+MaterialSystem *Engine::GetMaterialSystem() {
+    return materialSystem.get();
+}
+
+MeshSystem *Engine::GetMeshSystem() {
+    return meshSystem.get();
+}
+
+Renderer *Engine::GetRenderer() {
+    return renderer.get();
 }

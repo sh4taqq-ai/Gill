@@ -1,10 +1,19 @@
 #pragma once
-#include "assetID.hpp"
+#include "core/system/asset/assetID.hpp"
+#include "mathpp.hpp"
 
+struct Material {
+    AssetHandle shaderID;
+    AssetHandle textureID;
+    mathpp::vec3f albedo{1.0f,2.0f,0.0f};
 
-/*TODO: Implement the MaterialComponent*/
-
-struct MaterialComponent {
-    AssetID shaderID = INVALID_ASSETID;
-    AssetID textureID = INVALID_ASSETID;
 };
+
+namespace comp {
+
+
+
+    struct MaterialComponent {
+        AssetHandle materialID;
+    };
+}

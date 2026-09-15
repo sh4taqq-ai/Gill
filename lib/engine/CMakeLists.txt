@@ -55,10 +55,18 @@ add_library(engine STATIC
         include/render/texture/texture.hpp
         src/render/texture/texture.cpp
         include/component/material.hpp
-        include/component/assetID.hpp
+        include/core/system/asset/assetID.hpp
+        include/editor/registry/registry.hpp
+        src/editor/registry/registry.cpp
+        include/core/system/mesh/mesh.hpp
+        src/core/system/mesh/mesh.cpp
+        include/core/system/material/material.hpp
+        src/core/system/material/material.cpp
+        src/editor/ui/uiComponent/mesh.cpp
+        include/editor/ui/uiComponent/mesh.hpp
 
 
 )
 
-target_link_libraries(engine PUBLIC glad glfw mathpp imgui gill stb_image)
+target_link_libraries(engine PUBLIC glad glfw mathpp imgui stb_image magic_enum::magic_enum)
 target_include_directories(engine PUBLIC include)

@@ -22,6 +22,16 @@ void Input::Update() {
         wasHeld = false;
         mouseUp.Fire(static_cast<int>(currentX),static_cast<int>(currentY));
     }
+    prevKeys = currKeys;
+    for (int key = GLFW_KEY_SPACE; key <= GLFW_KEY_LAST; ++key) {
+        int state = glfwGetKey(window_->GetWindow(), key);
+        if (state == GLFW_PRESS) {
+            currKeys[key] = true;
+        } else if (state == GLFW_RELEASE) {
+            currKeys[key] = false;
+        }
+    }
+
 }
 
 void Input::GetCursorPos(mathpp::vec2f &pos) {
@@ -64,4 +74,12 @@ void Input::SetCursorMode(int mode) {
     if (cursor == CursorMode::Disabled) {
         glfwSetInputMode(window_->GetWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     }
+}
+
+bool Input::IsKeyPressed(int key) const {
+    return currKeys[key] && !prevKeys[key];
+}
+
+bool Input::IsKeyUp(int key) const {
+    return !currKeys[key];
 }
