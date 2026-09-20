@@ -1,71 +1,93 @@
 #include "editor/gizmo/gizmoController.hpp"
 #include "core/component/raycast/raycast.hpp"
 #include "core/system/transform/transform.hpp"
+#include "editor/selector/selectionManager.hpp"
 
 
 GizmoAxis GizmoController::GetActiveAxis() const {
-    return _gizmoData->axis;
+    return p_gizmoData->axis;
 }
 
 GizmoController::~GizmoController() = default;
 
-void GizmoController::Init(float width, float height,GizmoData* gizmoData,TransformSystem* transformSystem) {
-    wdth = width;
-    hght = height;
-    _gizmoData = gizmoData;
-    _transformSystem = transformSystem;
+void GizmoController::Init(float width, float height,GizmoData* gizmoData,TransformSystem* transformSystem,SelectionManager* selectionManager) {
+    m_width = width;
+    m_height = height;
+    p_gizmoData = gizmoData;
+    p_transformSystem = transformSystem;
+    p_selectionManager = selectionManager;
 }
 
 bool GizmoController::IsDragging() {
     return isDragging;
 }
 
-void GizmoController::Begin(const mathpp::mat4f& view, const mathpp::mat4f& proj, float mouseX, float mouseY,const mathpp::vec3f &dragPosStart,const mathpp::quatf& dragRotStart, const mathpp::vec3f& dragScaleStart, Entity entity ) {
+void GizmoController::Begin(const mathpp::mat4f& view, const mathpp::mat4f& proj, float mouseX, float mouseY) {
     if (isDragging)
     {return;}
-    _draggedEntity = entity;
-    mathpp::vec3f axisDir = GetAxis();
-    if (_gizmoData->mode==GizmoMode::Rotate) {
+    m_transformAxis = GetAxis();
+    auto selected = p_selectionManager->GetAllSelected();
+    m_pivotStartPos = ComputeMedianPos(selected);
+
+    for (auto entity : selected) {
+        const auto& worldTransform = p_transformSystem->GetWorldTransform(entity);
+        TransformSnapshot snapshot;
+        snapshot.worldPos = mathpp::TranslateFromMat4(worldTransform);
+        snapshot.worldRot = p_transformSystem->GetWorldRotation(entity);
+        snapshot.worldScale = mathpp::ScaleFromMat4(worldTransform);
+        um_worldTransforms.insert({entity, snapshot});
+    }
+
+
+   /*
+    if (p_gizmoData->mode==GizmoMode::Rotate) {
         float ndcX{};
         float ndcY{};
         ComputeNDC(ndcX,ndcY,mouseX,mouseY);
         Ray ray = ScreenToRay(ndcX,ndcY,view,proj);
         float t{};
-        if (IntersectPlane(axisDir,dragPosStart,ray,t)) {
+        if (IntersectPlane(m_transformAxis,dragPosStart,ray,t)) {
             mathpp::vec3f hitPoint = ray.origin + ray.direction * t;
-            _dragStartRadial = hitPoint - dragPosStart;
+            m_dragStartRadial = hitPoint - dragPosStart;
         }
-    }
-    _dragStartPos = dragPosStart;
-    _dragStartScale = dragScaleStart;
-    _dragStartRot = dragRotStart;
+    }*/
     isDragging = true;
 }
 
 
 void GizmoController::ComputeNDC(float &x, float &y,float mouseX,float mouseY) {
-    x =(mouseX/wdth)*2.0f - 1.0f;
-    y = 1.0f - (mouseY/hght)*2.0f;
+    x =(mouseX/m_width)*2.0f - 1.0f;
+    y = 1.0f - (mouseY/m_height)*2.0f;
 }
 
-bool GizmoController::Apply(const mathpp::mat4f &view, const mathpp::mat4f &proj, float mouseX, float mouseY, Entity entity) {
-    switch (_gizmoData->mode) {
+bool GizmoController::Apply(const mathpp::mat4f &view, const mathpp::mat4f &proj, float mouseX, float mouseY) {
+    switch (p_gizmoData->mode) {
         case GizmoMode::Translate: {
-            mathpp::vec3f pos;
-            if (!ContinueTranslate(view, proj, mouseX, mouseY, pos)) return false;
-            _transformSystem->SetPosition(entity, pos);
+            float t;
+            if (!ContinueTranslate(view, proj, mouseX, mouseY, t)) return false;
+
+
+            for (auto& [entity, snapshot] : um_worldTransforms) {
+                mathpp::vec3f entityAxis = GetAxisFor(entity);
+                mathpp::vec3f newWorldPos = snapshot.worldPos + entityAxis * t;
+                mathpp::mat4f  invParentWorld = mathpp::inverse(p_transformSystem->GetParentWorldTransform(entity));
+                mathpp::vec4f newWorldPos4 = {newWorldPos.x, newWorldPos.y, newWorldPos.z, 1.0f};
+                mathpp::vec4f localPos4 = invParentWorld * newWorldPos4;
+                mathpp::vec3f localPos = {localPos4.x, localPos4.y, localPos4.z};
+                p_transformSystem->SetPosition(entity, localPos);
+            }
             return true;
         }
+
         case GizmoMode::Rotate: {
-            mathpp::quatf rot;
-            if (!ContinueRotate(view, proj, mouseX, mouseY, rot)) return false;
-            _transformSystem->SetRotation(entity, rot);
+           //TODO: Make MultiSelect rotation
             return true;
         }
         case GizmoMode::Scale: {
-            mathpp::vec3f scale;
-            if (!ContinueScale(view, proj, mouseX, mouseY, scale)) return false;
-            _transformSystem->SetScale(entity, scale);
+            //TODO: Make MultiSelect Scaling
+
+
+
             return true;
         }
     }
@@ -75,45 +97,41 @@ bool GizmoController::Apply(const mathpp::mat4f &view, const mathpp::mat4f &proj
 
 void GizmoController::End() {
     isDragging = false;
-    _gizmoData->axis =GizmoAxis::None;
+    p_gizmoData->axis =GizmoAxis::None;
+    um_worldTransforms.clear();
 }
 
 void GizmoController::SetMode(const GizmoMode &mode) {
-    _gizmoData->mode = mode;
+    p_gizmoData->mode = mode;
 }
 
 GizmoMode GizmoController::GetMode() {
-    return _gizmoData->mode;
+    return p_gizmoData->mode;
 }
 
-bool GizmoController::ContinueTranslate(const mathpp::mat4f &view, const mathpp::mat4f &proj, float mouseX, float mouseY, mathpp::vec3f &outValue) {
-    mathpp::vec3f axisDir = GetAxis();
-    float ndcX{};
-    float ndcY{};
-    ComputeNDC(ndcX,ndcY,mouseX,mouseY);
-    Ray ray = ScreenToRay(ndcX,ndcY,view,proj);
-    mathpp::vec3f w0 = _dragStartPos - ray.origin;
-    float b = mathpp::dot(axisDir,ray.direction);
-    float d = mathpp::dot(axisDir,w0);
-    float e = mathpp::dot(ray.direction,w0);
-    float denom = 1 - b*b;
+bool GizmoController::ContinueTranslate(const mathpp::mat4f &view, const mathpp::mat4f &proj, float mouseX, float mouseY, float& outT) {
+    mathpp::vec3f axisDir = m_transformAxis;
+    float ndcX{}, ndcY{};
+    ComputeNDC(ndcX, ndcY, mouseX, mouseY);
+    Ray ray = ScreenToRay(ndcX, ndcY, view, proj);
+    mathpp::vec3f w0 = m_pivotStartPos - ray.origin;
+    float b = mathpp::dot(axisDir, ray.direction);
+    float d = mathpp::dot(axisDir, w0);
+    float e = mathpp::dot(ray.direction, w0);
+    float denom = 1 - b * b;
     if (denom <= minDenom) return false;
-    float t = (b*e - d) / denom;
-
-
-
-    outValue = _dragStartPos + axisDir * t;
+    outT = (b * e - d) / denom;
     return true;
 }
 
 bool GizmoController::ContinueScale(const mathpp::mat4f &view, const mathpp::mat4f &proj, float mouseX, float mouseY, mathpp::vec3f &outValue) {
-    mathpp::vec3f axisDir = GetAxis();
+    mathpp::vec3f axisDir = m_transformAxis;
     float ndcX{};
     float ndcY{};
     ComputeNDC(ndcX,ndcY,mouseX,mouseY);
     Ray ray = ScreenToRay(ndcX,ndcY,view,proj);
 
-    mathpp::vec3f w0 = _dragStartPos - ray.origin;
+    mathpp::vec3f w0 = m_pivotStartPos - ray.origin;
     float b = mathpp::dot(axisDir,ray.direction);
     float d = mathpp::dot(axisDir,w0);
     float e = mathpp::dot(ray.direction,w0);
@@ -124,8 +142,8 @@ bool GizmoController::ContinueScale(const mathpp::mat4f &view, const mathpp::mat
     if (std::abs(multiplier) < 0.001f) {
         multiplier = multiplier < 0 ? -0.001f : 0.001f;
     }
-    outValue = _dragStartScale;
-    switch (_gizmoData->axis) {
+    outValue = m_pivotStartPos;
+    switch (p_gizmoData->axis) {
         case GizmoAxis::X: outValue.x *= multiplier; break;
         case GizmoAxis::Y: outValue.y *= multiplier; break;
         case GizmoAxis::Z: outValue.z *= multiplier; break;
@@ -133,36 +151,36 @@ bool GizmoController::ContinueScale(const mathpp::mat4f &view, const mathpp::mat
     }
     return true;
 }
-
+/*
 bool GizmoController::ContinueRotate(const mathpp::mat4f& view, const mathpp::mat4f& proj, float mouseX, float mouseY, mathpp::quatf& outValue) {
-    mathpp::vec3f axisDir = GetAxis();
-    if (_gizmoData->axis == GizmoAxis::None) return false;/**/
+    mathpp::vec3f axisDir = m_transformAxis;
+    if (p_gizmoData->axis == GizmoAxis::None) return false;
 
     float ndcX{}, ndcY{};
     ComputeNDC(ndcX, ndcY, mouseX, mouseY);
     Ray ray = ScreenToRay(ndcX, ndcY, view, proj);
 
     float t{};
-    if (!IntersectPlane(axisDir, _dragStartPos, ray, t)) return false;
+    if (!IntersectPlane(axisDir, m_dragStartPos, ray, t)) return false;
 
     mathpp::vec3f hitPoint = ray.origin + ray.direction * t;
-    mathpp::vec3f currentRadial = hitPoint - _dragStartPos;
+    mathpp::vec3f currentRadial = hitPoint - m_dragStartPos;
 
-    float dotVal = mathpp::dot(_dragStartRadial, currentRadial);
-    mathpp::vec3f crossVal = mathpp::cross(_dragStartRadial, currentRadial);
+    float dotVal = mathpp::dot(m_dragStartRadial, currentRadial);
+    mathpp::vec3f crossVal = mathpp::cross(m_dragStartRadial, currentRadial);
     float deltaTheta = atan2(mathpp::dot(crossVal, axisDir), dotVal);
     float halfAngle = deltaTheta/2.0f;
     float cosH = cosf(halfAngle);
     float sinH = sinf(halfAngle);
     mathpp::quatf deltaQuat = {cosH,axisDir.x * sinH,axisDir.y * sinH,axisDir.z * sinH};
 
-    outValue = (_gizmoData->referenceFrame == ReferenceFrame::World)
-        ? deltaQuat * _dragStartRot
-        : _dragStartRot * deltaQuat;
+    outValue = (p_gizmoData->referenceFrame == ReferenceFrame::World)
+        ? deltaQuat * m_dragStartRot
+        : m_dragStartRot * deltaQuat;
 
     return true;
 }
-
+*/
 bool GizmoController::IntersectPlane(const mathpp::vec3f& planeNormal, const mathpp::vec3f& planePoint,const Ray& ray, float& outT) const {
     float denom = mathpp::dot(planeNormal, ray.direction);
     if (std::abs(denom) <= minDenom) return false;
@@ -172,7 +190,7 @@ bool GizmoController::IntersectPlane(const mathpp::vec3f& planeNormal, const mat
 
 mathpp::vec3f GizmoController::GetAxis() {
     mathpp::vec3f axisDir;
-    switch (_gizmoData->axis) {
+    switch (p_gizmoData->axis) {
         case GizmoAxis::Z:
              axisDir = mathpp::vec3f(0.0f, 0.0f, 1.0f);
             break;
@@ -185,8 +203,41 @@ mathpp::vec3f GizmoController::GetAxis() {
         default:
             axisDir = mathpp::vec3f(1.0f, 0.0f, 0.0f);
     }
-    if (_gizmoData->referenceFrame == ReferenceFrame::Local) {
-        axisDir = mathpp::RotateVector(_transformSystem->GetWorldRotation(_draggedEntity),axisDir); // world rot needs to come from somewhere
+    if (p_gizmoData->referenceFrame == ReferenceFrame::Local) {
+        axisDir = mathpp::RotateVector(p_transformSystem->GetWorldRotation(p_selectionManager->GetActiveSelected().value()),axisDir);
+    }
+    return axisDir;
+}
+
+mathpp::vec3f GizmoController::ComputeMedianPos(const std::unordered_set<Entity>& selected) {
+    mathpp::vec3f sum;
+    float size = static_cast<float>(selected.size());
+    for (auto entity : selected) {
+        mathpp::mat4f worldTransform = p_transformSystem->GetWorldTransform(entity);
+        mathpp::vec3f worldPos = mathpp::TranslateFromMat4(worldTransform);
+        sum += worldPos;
+    }
+    return sum/size;
+}
+
+mathpp::vec3f GizmoController::GetAxisFor(Entity entity) {
+    mathpp::vec3f axisDir;
+    switch (p_gizmoData->axis) {
+        case GizmoAxis::Z:
+            axisDir = mathpp::vec3f(0.0f, 0.0f, 1.0f);
+            break;
+        case GizmoAxis::X:
+            axisDir = mathpp::vec3f(1.0f, 0.0f, 0.0f);
+            break;
+        case GizmoAxis::Y:
+            axisDir = mathpp::vec3f(0.0f, 1.0f, 0.0f);
+            break;
+        default:
+            axisDir = mathpp::vec3f(1.0f, 0.0f, 0.0f);
+    }
+    if (p_gizmoData->referenceFrame == ReferenceFrame::Local) {
+        axisDir = mathpp::RotateVector(p_transformSystem->GetWorldRotation(entity),axisDir);
+
     }
     return axisDir;
 }

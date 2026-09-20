@@ -27,8 +27,8 @@ public:
     void RemoveTexture(AssetHandle handle);
 
 private:
-    AssetManager<Material> materialManager;
-    AssetManager<Shader> shaderManager;
-    AssetManager<Texture> textureManager;
-    Material defaultMaterial;
+    AssetManager<Material> m_materialManager;
+    AssetManager<Shader> m_shaderManager;
+    AssetManager<Texture> m_textureManager;
+    Material m_defaultMaterial;
 };

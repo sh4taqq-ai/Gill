@@ -4,16 +4,16 @@
 #include <GLFW/glfw3.h>
 
 Mesh::Mesh(const std::vector<Vertex> &vertices, const std::vector<unsigned int> &indices) {
-  indexCount = indices.size();
-  glGenVertexArrays(1, &VAO);
-  glBindVertexArray(VAO);
-  glGenBuffers(1, &VBO);
-  glBindBuffer(GL_ARRAY_BUFFER, VBO);
+  m_indexCount = indices.size();
+  glGenVertexArrays(1, &m_VAO);
+  glBindVertexArray(m_VAO);
+  glGenBuffers(1, &m_VBO);
+  glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
   glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), &vertices[0], GL_STATIC_DRAW);
 
-  glGenBuffers(1, &EBO);
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexCount * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
+  glGenBuffers(1, &m_EBO);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_EBO);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_indexCount * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
   glEnableVertexAttribArray(0);
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);                          // position
   glEnableVertexAttribArray(1);
@@ -24,36 +24,36 @@ Mesh::Mesh(const std::vector<Vertex> &vertices, const std::vector<unsigned int> 
 }
 
 void Mesh::Draw() const {
-  glBindVertexArray(VAO);
-  glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, 0);
+  glBindVertexArray(m_VAO);
+  glDrawElements(GL_TRIANGLES, m_indexCount, GL_UNSIGNED_INT, 0);
   glBindVertexArray(0);
 }
 
 Mesh::~Mesh() {
-  glDeleteVertexArrays(1, &VAO);
-  glDeleteBuffers(1, &VBO);
-  glDeleteBuffers(1, &EBO);
+  glDeleteVertexArrays(1, &m_VAO);
+  glDeleteBuffers(1, &m_VBO);
+  glDeleteBuffers(1, &m_EBO);
 }
 
 
 Mesh::Mesh(Mesh&& other) noexcept
-    : VAO(other.VAO), VBO(other.VBO), EBO(other.EBO), indexCount(other.indexCount) {
-  other.VAO = other.VBO = other.EBO = 0; // so the moved-from destructor is a no-op
-  other.indexCount = 0;
+    : m_VAO(other.m_VAO), m_VBO(other.m_VBO), m_EBO(other.m_EBO), m_indexCount(other.m_indexCount) {
+  other.m_VAO = other.m_VBO = other.m_EBO = 0; // so the moved-from destructor is a no-op
+  other.m_indexCount = 0;
 }
 
 Mesh& Mesh::operator=(Mesh&& other) noexcept {
   if (this != &other) {
     // clean up whatever this Mesh currently owns first
-    glDeleteVertexArrays(1, &VAO);
-    glDeleteBuffers(1, &VBO);
-    glDeleteBuffers(1, &EBO);
+    glDeleteVertexArrays(1, &m_VAO);
+    glDeleteBuffers(1, &m_VBO);
+    glDeleteBuffers(1, &m_EBO);
 
-    VAO = other.VAO; VBO = other.VBO; EBO = other.EBO;
-    indexCount = other.indexCount;
+    m_VAO = other.m_VAO; m_VBO = other.m_VBO; m_EBO = other.m_EBO;
+    m_indexCount = other.m_indexCount;
 
-    other.VAO = other.VBO = other.EBO = 0;
-    other.indexCount = 0;
+    other.m_VAO = other.m_VBO = other.m_EBO = 0;
+    other.m_indexCount = 0;
   }
   return *this;
 }

@@ -1,4 +1,5 @@
 #pragma once
+#include "mathpp.hpp"
 
 
 enum class GizmoAxis : int {
@@ -44,3 +45,9 @@ inline void ToggleReferenceFrame(GizmoData* gizmoData) {
 
     gizmoData->referenceFrame  = (gizmoData->referenceFrame == ReferenceFrame::Local) ? ReferenceFrame::World : ReferenceFrame::Local;
 }
+
+struct TransformSnapshot {
+    mathpp::vec3f worldPos;
+    mathpp::quatf worldRot;
+    mathpp::vec3f worldScale;
+};

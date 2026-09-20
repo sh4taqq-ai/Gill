@@ -9,8 +9,8 @@ class Scene;
 using Entity = uint32_t;
 
 struct EditorContext{
-    MeshSystem* meshSystem;
-    MaterialSystem* materialSystem;
+    MeshSystem* p_meshSystem;
+    MaterialSystem* p_materialSystem;
 };
 
 struct ComponentTypeInfo {

@@ -42,9 +42,9 @@ private:
     std::unique_ptr<Texture> matCapTexture;
     std::unique_ptr<Texture> fallBackTexture;
 
-    TransformSystem* _transformSystem;
-    MeshSystem* _meshSystem;
-    MaterialSystem* _materialSystem;
+    TransformSystem* p_transformSystem;
+    MeshSystem* p_meshSystem;
+    MaterialSystem* p_materialSystem;
 
-    ViewportMode viewportMode = ViewportMode::Solid;
+    ViewportMode em_viewportMode = ViewportMode::Solid;
 };

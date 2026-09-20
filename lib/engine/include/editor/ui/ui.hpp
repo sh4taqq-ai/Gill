@@ -11,11 +11,12 @@
 
 
 
+
 class EditorPanel {
 public:
     virtual ~EditorPanel() = default;
     virtual void Draw() = 0;
-    std::string name;
+    std::string m_name;
 };
 
 class Window;
@@ -24,19 +25,34 @@ class Gizmo;
 class TransformSystem;
 class Renderer;
 class Input;
+class EditorInputMap;
+class SelectionManager;
 struct GizmoData;
+
+struct UIContext {
+    GizmoData* p_gizmoData;
+    TransformSystem* p_transformSystem;
+    Renderer* p_renderer;
+    MeshSystem* p_meshSystem;
+    MaterialSystem* p_materialSystem;
+    EditorInputMap* p_editorInputMap;
+    SelectionManager* p_selectionManager;
+    Scene* p_scene;
+};
+
 
 
 
 
 class PropertiesPanel : public EditorPanel {
 public:
-    PropertiesPanel(Scene* scene, TransformSystem* transformSystem,EditorContext ctx)
-        : scene(scene), transformSystem(transformSystem),ctx(ctx) {}
+    PropertiesPanel(Scene* scene, TransformSystem* transformSystem,SelectionManager* selectionManager,EditorContext ctx)
+        : p_scene(scene), p_transformSystem(transformSystem),p_selectionManager(selectionManager),ctx(ctx) {}
     void Draw() override;
 private:
-    Scene* scene;
-    TransformSystem* transformSystem;
+    Scene* p_scene;
+    SelectionManager* p_selectionManager;
+    TransformSystem* p_transformSystem;
     EditorContext ctx;
     static inline const ComponentTypeInfo ComponentTypes[] = {
         { "Mesh",     AddMesh,    RemoveMesh,DrawMeshInspector,HasMesh },
@@ -45,22 +61,24 @@ private:
 
 class HierarchyPanel : public EditorPanel {
     public:
-    HierarchyPanel(Scene* scene, Hierarchy* hierarchy) : scene(scene), hierarchy(hierarchy) {}
+    HierarchyPanel(Scene* scene, Hierarchy* hierarchy, TransformSystem* transformSystem) : p_scene(scene), p_hierarchy(hierarchy), p_transformSystem(transformSystem) {}
     void Draw() override;
 private:
     void DrawEntityNode(Entity entity);
-    Scene* scene;
-    Hierarchy* hierarchy;
+    Scene* p_scene;
+    Hierarchy* p_hierarchy;
+    TransformSystem* p_transformSystem;
+    SelectionManager* p_selectionManager;
 };
 
 class GizmoPanel : public EditorPanel {
 public:
-    GizmoPanel(GizmoData* gizmoData) : _gizmoData(gizmoData) {}
+    GizmoPanel(GizmoData* gizmoData) : p_gizmoData(gizmoData) {}
 
     void Draw() override;
 
 private:
-    GizmoData* _gizmoData;
+    GizmoData* p_gizmoData;
 };
 
 struct PrimitiveData {
@@ -74,11 +92,11 @@ struct PrimitiveData {
 
 class UIManager {
 public:
-    void Init(Window* window,Scene* scene,TransformSystem* transformSystem, Hierarchy* hierarchy,GizmoData* gizmoData,Renderer* renderer,MeshSystem* meshSystem,MaterialSystem* materialSystem);
+    void Init(Window* window,Scene* scene,TransformSystem* transformSystem, Hierarchy* hierarchy,GizmoData* gizmoData,Renderer* renderer,MeshSystem* meshSystem,MaterialSystem* materialSystem,EditorInputMap* editorInputMap,SelectionManager* selectionManager);
     void RenderPanels();
     void RenderAddMenu(Scene* scene);
     void RenderPrimitiveOp(Scene* scene);
-    void RenderViewportMode(Input* input);
+    void RenderViewportMode();
     void BeginFrame();
     void EndFrame();
     bool WantCaptureMouse();
@@ -87,14 +105,16 @@ public:
 private:
     void DrawDockspace(Scene* scene);
     void AdjustLastOp(Scene* scene);
-    PrimitiveData primitiveData;
-    Renderer* _renderer;
-    MeshSystem* _meshSystem;
-    TransformSystem* _transformSystem;
-    std::vector<std::unique_ptr<EditorPanel>> panels;
+    EditorInputMap* p_editorInputMap;
+    PrimitiveData m_primitiveData;
+    Renderer* p_renderer;
+    MeshSystem* p_meshSystem;
+    TransformSystem* p_transformSystem;
+    SelectionManager* p_selectionManager;
+    std::vector<std::unique_ptr<EditorPanel>> v_panels;
     void AddPrimitive(Scene* scene, PrimitiveType type);
     void AddSunlight(Scene* scene);
-    ImGuiIO* io_ptr;
+    ImGuiIO* p_io_ptr;
 
 
 

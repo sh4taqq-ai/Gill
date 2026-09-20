@@ -1,64 +1,64 @@
 #include "core/system/material/material.hpp"
 
 const Material *MaterialSystem::GetMaterial(AssetHandle handle) const {
-    if (materialManager.Has(handle)) {
-        return materialManager.Get(handle);
+    if (m_materialManager.Has(handle)) {
+        return m_materialManager.Get(handle);
     }
     return nullptr;
 }
 
 bool MaterialSystem::HasMaterial(AssetHandle handle) const {
-    return materialManager.Has(handle);
+    return m_materialManager.Has(handle);
 }
 
 AssetHandle MaterialSystem::RegisterMaterial(Material &&material) {
-    return materialManager.Load(material);
+    return m_materialManager.Load(material);
 }
 
 const Shader *MaterialSystem::GetShader(AssetHandle handle) const {
-    if (shaderManager.Has(handle)) {
-        return shaderManager.Get(handle);
+    if (m_shaderManager.Has(handle)) {
+        return m_shaderManager.Get(handle);
     }
     return nullptr;
 }
 
 
 const Texture *MaterialSystem::GetTexture(AssetHandle handle) const {
-    if (textureManager.Has(handle)) {
-        return textureManager.Get(handle);
+    if (m_textureManager.Has(handle)) {
+        return m_textureManager.Get(handle);
     }
     return nullptr;
 }
 
 bool MaterialSystem::HasShader(AssetHandle handle) const {
-    return shaderManager.Has(handle);
+    return m_shaderManager.Has(handle);
 }
 
 bool MaterialSystem::HasTexture(AssetHandle handle) const {
-    return textureManager.Has(handle);
+    return m_textureManager.Has(handle);
 }
 
 void MaterialSystem::RemoveMaterial(AssetHandle handle) {
-    materialManager.Unload(handle);
+    m_materialManager.Unload(handle);
 }
 
 void MaterialSystem::RemoveTexture(AssetHandle handle) {
-    textureManager.Unload(handle);
+    m_textureManager.Unload(handle);
 }
 
 void MaterialSystem::RemoveShader(AssetHandle handle) {
-    shaderManager.Unload(handle);
+    m_shaderManager.Unload(handle);
 }
 
 AssetHandle MaterialSystem::LoadTextureFile(const std::string &path) {
-    return textureManager.Load(Texture(path));
+    return m_textureManager.Load(Texture(path));
 }
 
 AssetHandle MaterialSystem::LoadShaderFile(const std::string &vertPath, const std::string &fragPath) {
-    return shaderManager.Load(Shader(vertPath, fragPath));
+    return m_shaderManager.Load(Shader(vertPath, fragPath));
 }
 
 const Material *MaterialSystem::GetDefaultMaterial() const {
-    return &defaultMaterial;
+    return &m_defaultMaterial;
 }
 

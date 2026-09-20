@@ -16,7 +16,7 @@ class Window {
     void GetFrameBufferSize(int* width,int* height);
     int GetLeftMouseButton() const;
     private:
-    GLFWwindow* wp;
+    GLFWwindow* p_wp;
 };
 
 

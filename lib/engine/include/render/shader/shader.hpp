@@ -24,7 +24,7 @@ public:
     void setMat3f(const std::string& name, const mathpp::mat3f& matrix) const;
 
 private:
-    unsigned int ID;
+    unsigned int m_ID;
 
 };
 

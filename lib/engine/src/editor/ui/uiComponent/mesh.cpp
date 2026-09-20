@@ -28,7 +28,7 @@ void DrawMeshInspector(Scene* s, Entity e,EditorContext& ctx) {
             for (size_t  i = 0; i <count  ; i++)
             {
                 if (ImGui::Selectable(names[i].data())) {
-                    mesh->meshID= ctx.meshSystem->AddPrimitive(values[i]);
+                    mesh->meshID= ctx.p_meshSystem->AddPrimitive(values[i]);
                 }
             }
             ImGui::EndListBox();

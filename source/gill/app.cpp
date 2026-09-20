@@ -9,42 +9,42 @@
 
 void App::Init(unsigned int width, unsigned int height) {
     int actualWidth, actualHeight;
-    window = std::make_unique<Window>(width,height,title);
-    window->GetFrameBufferSize(&actualWidth, &actualHeight);
+    up_window = std::make_unique<Window>(width,height,title);
+    up_window->GetFrameBufferSize(&actualWidth, &actualHeight);
 
-    wdth = static_cast<float>(actualWidth);
-    hght = static_cast<float>(actualHeight);
-    aspect = static_cast<float>(width) / static_cast<float>(height);
-    projection = mathpp::perspective(45.0f,aspect,0.01f,300.0f);
+    m_width = static_cast<float>(actualWidth);
+    m_height = static_cast<float>(actualHeight);
+    m_aspect = static_cast<float>(width) / static_cast<float>(height);
+    m_projection = mathpp::perspective(45.0f,m_aspect,0.01f,300.0f);
 
-    engine = std::make_unique<Engine>(projection);
-    editor = std::make_unique<Editor>();
-    scene = std::make_unique<Scene>();
-    camera = std::make_unique<Camera>();
-    input = std::make_unique<Input>(window.get());
-    engine->Init(static_cast<int>(wdth),static_cast<int>(hght),camera.get(),scene.get());
-    editor->Init(wdth,hght,window.get(),scene.get(),projection,camera.get(),engine->GetTransformSystem(),engine->GetHierarchy(),engine->GetMeshSystem(),engine->GetMaterialSystem(),engine->GetRenderer());
+    up_engine = std::make_unique<Engine>(m_projection);
+    up_editor = std::make_unique<Editor>();
+    up_scene = std::make_unique<Scene>();
+    up_camera = std::make_unique<Camera>();
+    up_input = std::make_unique<Input>(up_window.get());
+    up_engine->Init(static_cast<int>(m_width),static_cast<int>(m_height),up_camera.get(),up_scene.get());
+    up_editor->Init(m_width,m_height,up_window.get(),up_scene.get(),m_projection,up_camera.get(),up_engine->GetTransformSystem(),up_engine->GetHierarchy(),up_engine->GetMeshSystem(),up_engine->GetMaterialSystem(),up_engine->GetRenderer());
 }
 
 
 void App::Run() {
-    while (!window->ShouldClose()) {
+    while (!up_window->ShouldClose()) {
         float currentTime = glfwGetTime();
-        deltaTime = currentTime - lastFrame;
-        lastFrame = currentTime;
-        window->PollEvents();
+        m_deltaTime = currentTime - m_lastFrame;
+        m_lastFrame = currentTime;
+        up_window->PollEvents();
         glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-        input->Update();
-        camera->Update(input.get(),deltaTime,{0.0f,0.0f,0.0f});
-        engine->Run();
-        editor->Run(deltaTime);
-        window->SwapBuffers();
+        up_input->Update();
+        up_camera->Update(up_input.get(),m_deltaTime,{0.0f,0.0f,0.0f});
+        up_engine->Run();
+        up_editor->Run(m_deltaTime);
+        up_window->SwapBuffers();
     }
 }
 
 void App::Shutdown() {
-    editor->ShutDown();
-    engine->Shutdown();
+    up_editor->ShutDown();
+    up_engine->Shutdown();
     glfwTerminate();
 }
 

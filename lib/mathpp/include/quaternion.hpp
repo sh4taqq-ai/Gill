@@ -1,4 +1,3 @@
-#include "vec3.hpp"
 #pragma once
 
 namespace mathpp {
@@ -48,15 +47,6 @@ namespace mathpp {
         r.y = to_degrees(asin(sinPitch));
         return r;
     }
-    template<typename T>
-    quat<T> ConjugateQuat(const quat<T>& q){
-        quat<T> r;
-        r.w = q.w;
-        r.x = -q.x;
-        r.y = -q.y;
-        r.z = -q.z;
-        return r;
-    }
 
 
 
@@ -88,6 +78,11 @@ vec3<T> RotateVector(const quat<T>& q, const vec3<T>& v) {
         m.col[2] = vec4<T>(2*(xz+wy),     2*(yz-wx),     1 - 2*(xx+yy), 0.0f);
         m.col[3] = vec4<T>(0.0f,          0.0f,          0.0f,         1.0f);
         return m;
+    }
+
+    template <typename T>
+    quat<T> ConjugateQuat(const quat<T>& q) {
+        return quat<T>(q.w, -q.x, -q.y, -q.z);
     }
 
     using quatf = quat<float>;

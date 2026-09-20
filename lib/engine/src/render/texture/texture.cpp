@@ -5,17 +5,17 @@
 
 Texture::Texture(const std::string& path) {
     stbi_set_flip_vertically_on_load(true); // GL expects (0,0) at bottom-left; most images are top-left
-    unsigned char* data = stbi_load(path.c_str(), &width, &height, &channels, 0);
+    unsigned char* data = stbi_load(path.c_str(), &m_width, &m_height, &m_channels, 0);
     if (!data) {
         std::cerr << "Failed to load texture: " << path << std::endl;
         return;
     }
 
-    GLenum format = (channels == 4) ? GL_RGBA : (channels == 3) ? GL_RGB : GL_RED;
+    GLenum format = (m_channels == 4) ? GL_RGBA : (m_channels == 3) ? GL_RGB : GL_RED;
 
-    glGenTextures(1, &ID);
-    glBindTexture(GL_TEXTURE_2D, ID);
-    glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+    glGenTextures(1, &m_ID);
+    glBindTexture(GL_TEXTURE_2D, m_ID);
+    glTexImage2D(GL_TEXTURE_2D, 0, format, m_width, m_height, 0, format, GL_UNSIGNED_BYTE, data);
     glGenerateMipmap(GL_TEXTURE_2D);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -28,24 +28,24 @@ Texture::Texture(const std::string& path) {
 }
 
 Texture::~Texture() {
-    if (ID != 0) glDeleteTextures(1, &ID);
+    if (m_ID != 0) glDeleteTextures(1, &m_ID);
 }
 
 Texture::Texture(Texture&& other) noexcept
-    : ID(other.ID), width(other.width), height(other.height), channels(other.channels) {
-    other.ID = 0;
+    : m_ID(other.m_ID), m_width(other.m_width), m_height(other.m_height), m_channels(other.m_channels) {
+    other.m_ID = 0;
 }
 
 Texture& Texture::operator=(Texture&& other) noexcept {
     if (this != &other) {
-        if (ID != 0) glDeleteTextures(1, &ID);
-        ID = other.ID; width = other.width; height = other.height; channels = other.channels;
-        other.ID = 0;
+        if (m_ID != 0) glDeleteTextures(1, &m_ID);
+        m_ID = other.m_ID; m_width = other.m_width; m_height = other.m_height; m_channels = other.m_channels;
+        other.m_ID = 0;
     }
     return *this;
 }
 
 void Texture::Bind(unsigned int unit) const {
     glActiveTexture(GL_TEXTURE0 + unit);
-    glBindTexture(GL_TEXTURE_2D, ID);
+    glBindTexture(GL_TEXTURE_2D, m_ID);
 }

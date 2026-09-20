@@ -19,6 +19,6 @@ public:
 
     ~Mesh();
     private:
-    unsigned int VAO = 0, VBO = 0, EBO = 0;
-    unsigned int indexCount;
+    unsigned int m_VAO = 0, m_VBO = 0, m_EBO = 0;
+    unsigned int m_indexCount;
 };

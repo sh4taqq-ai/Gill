@@ -17,5 +17,5 @@ private:
 
      Mesh LoadMeshFromFile(const std::string& path);
 
-    AssetManager<Mesh> meshManager;
+    AssetManager<Mesh> m_meshManager;
 };

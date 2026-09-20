@@ -7,7 +7,6 @@ add_library(engine STATIC
         src/scene/scene.cpp
         src/component/entity.cpp
         src/render/core/renderer.cpp
-        src/render/mesh/primitives.cpp
         src/core/component/raycast/raycast.cpp
         src/editor/selector/selector.cpp
         src/editor/ui/ui.cpp
@@ -16,7 +15,6 @@ add_library(engine STATIC
         src/editor/grid/grid.cpp
         src/editor/gizmo/gizmo.cpp
         src/io/obj/obj.cpp
-        src/core/component/event/event.cpp
         src/editor/gizmo/gizmoController.cpp
         src/core/system/hierarchy/hierarchy.cpp
         include/core/engine/engine.hpp
@@ -57,13 +55,16 @@ add_library(engine STATIC
         include/component/material.hpp
         include/core/system/asset/assetID.hpp
         include/editor/registry/registry.hpp
-        src/editor/registry/registry.cpp
         include/core/system/mesh/mesh.hpp
         src/core/system/mesh/mesh.cpp
         include/core/system/material/material.hpp
         src/core/system/material/material.cpp
         src/editor/ui/uiComponent/mesh.cpp
         include/editor/ui/uiComponent/mesh.hpp
+        include/editor/inputAction/inputAction.hpp
+        src/editor/inputAction/inputAction.cpp
+        include/editor/selector/selectionManager.hpp
+        src/editor/selector/selectionManager.cpp
 
 
 )

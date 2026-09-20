@@ -12,8 +12,8 @@ public:
     void Render(const mathpp::mat4f& view, const mathpp::mat4f& projection, const mathpp::vec3f& camPos);
 
 private:
-    std::unique_ptr<Mesh> gridMesh;
-    std::unique_ptr<Shader> gridShader;
-    float cellSize = 1.0f;
-    float ext;
+    std::unique_ptr<Mesh> up_gridMesh;
+    std::unique_ptr<Shader> up_gridShader;
+    float m_cellSize = 1.0f;
+    float m_ext;
 };

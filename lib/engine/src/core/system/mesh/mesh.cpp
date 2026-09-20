@@ -2,15 +2,15 @@
 #include "scene/scene.hpp"
 
 const Mesh *MeshSystem::GetMesh(AssetHandle id) const {
-        return meshManager.Get(id);
+        return m_meshManager.Get(id);
 }
 
 bool MeshSystem::HasMesh(AssetHandle id) const {
-        return meshManager.Has(id);
+        return m_meshManager.Has(id);
 }
 
 AssetHandle MeshSystem::RegisterMesh(Mesh &&mesh) {
-        return meshManager.Load(std::move(mesh));
+        return m_meshManager.Load(std::move(mesh));
 }
 
 
@@ -36,5 +36,5 @@ AssetHandle MeshSystem::AddPrimitive(PrimitiveType type,unsigned int rings, unsi
 MeshSystem::~MeshSystem() = default;
 
 void MeshSystem::RemoveMesh(AssetHandle id) {
-        meshManager.Unload(id);
+        m_meshManager.Unload(id);
 }

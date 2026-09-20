@@ -333,14 +333,3 @@ Mesh inline CreateCone(unsigned int segments, float radius, float height) {
 }
 
 
-inline Mesh CreatePrimitive(PrimitiveType type) {
-    switch (type) {
-        case PrimitiveType::Cube:   return CreateCube();
-        case PrimitiveType::Sphere: return CreateSphere(15, 15, 2.0f);
-        case PrimitiveType::Plane:  return CreatePlane();
-        case PrimitiveType::Cylinder: return CreateCylinder(15,1.0f,2.0f);
-        case PrimitiveType::Cone : return CreateCone(15,1.0f,2.0f);
-    }
-    //unreachable if all enum cases handled, but compilers often want a fallback:
-    return CreateCube();
-}

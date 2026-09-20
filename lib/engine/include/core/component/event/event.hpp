@@ -10,15 +10,15 @@ public:
     using Handle = uint32_t;
 
     Handle Subscribe( Callback cb) {
-        Handle handle = next_handle++;
-        callbacks.insert({handle, cb});
+        Handle handle = m_next_handle++;
+        um_callbacks.insert({handle, cb});
         return handle;
     }
     void Unsubscribe(Handle event_handle) {
-      callbacks.erase(event_handle);
+      um_callbacks.erase(event_handle);
     }
     void Fire(Args... args) {
-        for (const auto& [handle,cb] : callbacks) {
+        for (const auto& [handle,cb] : um_callbacks) {
             if (cb) {
                 cb(args...);
             }
@@ -26,6 +26,6 @@ public:
     }
 
 private:
-    std::unordered_map<Handle, Callback> callbacks;
-    Handle next_handle = 0;
+    std::unordered_map<Handle, Callback> um_callbacks;
+    Handle m_next_handle = 0;
 };

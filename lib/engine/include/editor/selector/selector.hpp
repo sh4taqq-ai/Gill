@@ -23,9 +23,9 @@ class Selector {
 
 private:
     void RenderEntityID(const Scene* scene,Entity entity, const comp::MeshComponent& meshComp,const mathpp::mat4f& view, const mathpp::mat4f& projection,TransformSystem* transformSystem,MeshSystem* meshSystem);
-    unsigned int wdth,hght;
-    unsigned int FBO;
-    unsigned int Texture;
-    unsigned int depthRenderBuffer;
-    std::unique_ptr<Shader> selectShader;
+    unsigned int m_width,m_height;
+    unsigned int m_FBO;
+    unsigned int m_Texture;
+    unsigned int m_depthRenderBuffer;
+    std::unique_ptr<Shader> up_selectShader;
 };

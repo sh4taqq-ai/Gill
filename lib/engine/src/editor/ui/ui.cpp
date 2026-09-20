@@ -9,24 +9,27 @@
 #include "render/core/renderer.hpp"
 #include "core/input/input.hpp"
 #include "core/system/mesh/mesh.hpp"
+#include "editor/inputAction/inputAction.hpp"
+#include "editor/selector/selectionManager.hpp"
 
 
-void UIManager::Init(Window* window,Scene* scene,TransformSystem* transformSystem, Hierarchy* hierarchy,GizmoData* gizmoData,Renderer* renderer,MeshSystem* meshSystem,MaterialSystem* materialSystem) {
+void UIManager::Init(Window* window,Scene* scene,TransformSystem* transformSystem, Hierarchy* hierarchy,GizmoData* gizmoData,Renderer* renderer,MeshSystem* meshSystem,MaterialSystem* materialSystem,EditorInputMap* editorInputMap,SelectionManager* selectionManager) {
     ImGui::CreateContext();
-    _renderer = renderer;
-    io_ptr = &ImGui::GetIO(); (void)io_ptr;
-    io_ptr->ConfigFlags |= ImGuiConfigFlags_DockingEnable; //Enable Docking
-    io_ptr->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-    io_ptr->ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;  // Enable Gamepad Controls
-    _meshSystem = meshSystem;
-    _transformSystem = transformSystem;
+    p_renderer = renderer;
+    p_io_ptr = &ImGui::GetIO(); (void)p_io_ptr;
+    p_io_ptr->ConfigFlags |= ImGuiConfigFlags_DockingEnable; //Enable Docking
+    p_io_ptr->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+    p_io_ptr->ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;  // Enable Gamepad Controls
+    p_meshSystem = meshSystem;
+    p_transformSystem = transformSystem;
+    this->p_editorInputMap = editorInputMap;
 
     ImGui_ImplOpenGL3_Init("#version 330");
     ImGui_ImplGlfw_InitForOpenGL(window->GetWindow(),true);
     EditorContext ctx{meshSystem,materialSystem};
-    panels.emplace_back(std::make_unique<PropertiesPanel>(scene, transformSystem,ctx));
-    panels.emplace_back(std::make_unique<HierarchyPanel>(scene, hierarchy));
-    panels.emplace_back(std::make_unique<GizmoPanel>(gizmoData));
+    v_panels.emplace_back(std::make_unique<PropertiesPanel>(scene, transformSystem,selectionManager,ctx));
+    v_panels.emplace_back(std::make_unique<HierarchyPanel>(scene, hierarchy,transformSystem));
+    v_panels.emplace_back(std::make_unique<GizmoPanel>(gizmoData));
 }
 
 void UIManager::BeginFrame() {
@@ -42,13 +45,15 @@ void UIManager::EndFrame() {
 
 
 void UIManager::AddPrimitive(Scene* scene, PrimitiveType type) {
-   AssetHandle meshID = _meshSystem->AddPrimitive(type,primitiveData.rings,primitiveData.segments,primitiveData.radius,primitiveData.height);
+   AssetHandle meshID = p_meshSystem->AddPrimitive(type,m_primitiveData.rings,m_primitiveData.segments,m_primitiveData.radius,m_primitiveData.height);
    Entity entity = scene->CreateEntity();
     comp::MeshComponent meshComp;
+    comp::MaterialComponent matComp;
+
     meshComp.meshID = meshID;
-    primitiveData.entity = entity;
-    primitiveData.type = type;
-    _transformSystem->AddTransform(entity);
+    m_primitiveData.entity = entity;
+    m_primitiveData.type = type;
+    p_transformSystem->AddTransform(entity);
     scene->InsertComponent(entity,meshComp);
 }
 
@@ -76,24 +81,24 @@ void UIManager::Shutdown() {
 
 
 bool UIManager::WantCaptureMouse() {
-    return io_ptr->WantCaptureMouse==true;
+    return p_io_ptr->WantCaptureMouse==true;
 }
 
 
 void GizmoPanel::Draw() {
     ImGui::Begin("Gizmo");
 
-    const char* modeLabel = _gizmoData->mode == GizmoMode::Translate ? "Translate"
-                           : _gizmoData->mode == GizmoMode::Rotate ? "Rotate" : "Scale";
+    const char* modeLabel = p_gizmoData->mode == GizmoMode::Translate ? "Translate"
+                           : p_gizmoData->mode == GizmoMode::Rotate ? "Rotate" : "Scale";
     if (ImGui::Button(modeLabel, ImVec2{80, 20})) {
-        SwitchMode(_gizmoData);
+        SwitchMode(p_gizmoData);
     }
 
     ImGui::SameLine();
 
-    const char* frameLabel = _gizmoData->referenceFrame == ReferenceFrame::Local ? "Local" : "World";
+    const char* frameLabel = p_gizmoData->referenceFrame == ReferenceFrame::Local ? "Local" : "World";
     if (ImGui::Button(frameLabel, ImVec2{80, 20})) {
-        ToggleReferenceFrame(_gizmoData);
+        ToggleReferenceFrame(p_gizmoData);
     }
 
     ImGui::End();
@@ -101,30 +106,30 @@ void GizmoPanel::Draw() {
 
 void PropertiesPanel::Draw(){
     ImGui::Begin("Properties");
-    if (!scene->GetSelected().has_value()) { ImGui::End(); return; }
-    ImGui::Text("Entity: %u", scene->GetSelected().value());
+    if (!p_selectionManager->GetActiveSelected().has_value()) { ImGui::End(); return; }
+    Entity entity = p_selectionManager->GetActiveSelected().value();
+    ImGui::Text("Entity: %u", entity);
     ImGui::NewLine();
-    Entity entity = scene->GetSelected().value();
-    comp::TransformComponent transform = transformSystem->GetTransform(entity); // local copy, read-only source
+    comp::TransformComponent transform = p_transformSystem->GetTransform(entity); // local copy, read-only source
 
     mathpp::vec3f pos = transform.position;
     if (ImGui::InputFloat3("Position", &pos.x)) {
-        transformSystem->SetPosition(entity, pos);
+        p_transformSystem->SetPosition(entity, pos);
     }
 
     mathpp::vec3f euler = mathpp::QuatToEulerAngles(transform.rotation);
     if (ImGui::InputFloat3("Rotation", &euler.x)) {
-        transformSystem->SetRotation(entity, mathpp::QuatFromEulerAngles(euler));
+        p_transformSystem->SetRotation(entity, mathpp::QuatFromEulerAngles(euler));
     }
 
     mathpp::vec3f scale = transform.scale;
     if (ImGui::InputFloat3("Scale", &scale.x)) {
-        transformSystem->SetScale(entity, scale);
+        p_transformSystem->SetScale(entity, scale);
     }
     for (const auto& type : ComponentTypes) {
-        if (type.Has(scene, entity)) {
+        if (type.Has(p_scene, entity)) {
             if (ImGui::CollapsingHeader(type.name)) {
-                type.DrawInspector(scene, entity, ctx);
+                type.DrawInspector(p_scene, entity, ctx);
             }
         }
     }
@@ -133,9 +138,9 @@ void PropertiesPanel::Draw(){
     }
     if (ImGui::BeginPopup("Add Component")) {
         for (const auto& type : ComponentTypes) {
-            if (!type.Has(scene, entity)) {
+            if (!type.Has(p_scene, entity)) {
                 if (ImGui::Selectable(type.name)) {
-                    type.Add(scene, entity, ctx);
+                    type.Add(p_scene, entity, ctx);
                 }
             }
         }
@@ -148,10 +153,10 @@ void PropertiesPanel::Draw(){
 
 
 void HierarchyPanel::Draw() {
-    std::vector<Entity> liveEntities = scene->GetLivingEntities();
+    std::vector<Entity> liveEntities = p_scene->GetLivingEntities();
     if (ImGui::Begin("Hierarchy")) {
         for (uint32_t entity : liveEntities) {
-            std::optional<Entity> parent = hierarchy->TryGetParent(entity);
+            std::optional<Entity> parent = p_hierarchy->TryGetParent(entity);
             if (!parent.has_value()) {
                 DrawEntityNode(entity);
             }
@@ -162,7 +167,8 @@ void HierarchyPanel::Draw() {
         if (ImGui::BeginDragDropTarget()) {
             if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ENTITY_DRAG")) {
                 Entity draggedEntity = *(Entity*)payload->Data;
-                hierarchy->Unparent(draggedEntity);
+                p_hierarchy->Unparent(draggedEntity);
+                p_transformSystem->MarkDirty(draggedEntity);
             }
             ImGui::EndDragDropTarget();
         }
@@ -173,14 +179,14 @@ void HierarchyPanel::Draw() {
 
 void HierarchyPanel::DrawEntityNode(Entity entity) {
     ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
-    if (scene->GetSelected().has_value() && scene->GetSelected().value() == entity) {
+    if (p_selectionManager->GetActiveSelected().has_value() && p_selectionManager->GetActiveSelected().value() == entity) {
         flags |= ImGuiTreeNodeFlags_Selected;
     }
     std::string title = "Entity " + std::to_string(entity);
-    std::vector children = hierarchy->GetChild(entity);
+    std::vector children = p_hierarchy->GetChild(entity);
     bool isNodeOpen = ImGui::TreeNodeEx((void*)(intptr_t)entity, flags, "%s", title.c_str());
     if (ImGui::IsItemClicked()) {
-        scene->SetSelected(entity);
+        p_scene->SetSelected(entity);
     }
     if (ImGui::BeginDragDropSource()) {
         ImGui::SetDragDropPayload("ENTITY_DRAG", &entity, sizeof(Entity));
@@ -193,7 +199,8 @@ void HierarchyPanel::DrawEntityNode(Entity entity) {
         if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ENTITY_DRAG"))
         {
             Entity draggedEntity = *(Entity*)payload->Data;
-            hierarchy->SetParent(draggedEntity, entity);
+            p_hierarchy->SetParent(draggedEntity, entity);
+            p_transformSystem->MarkDirty(draggedEntity);
         }
         ImGui::EndDragDropTarget();
     }
@@ -212,24 +219,24 @@ void HierarchyPanel::DrawEntityNode(Entity entity) {
 
 
 void UIManager::RenderPrimitiveOp(Scene *scene) {
-    if (primitiveData.entity == UINT32_MAX)
+    if (m_primitiveData.entity == UINT32_MAX)
     {return;}
-    if (primitiveData.type != PrimitiveType::Cube && primitiveData.type != PrimitiveType::Plane) {
+    if (m_primitiveData.type != PrimitiveType::Cube && m_primitiveData.type != PrimitiveType::Plane) {
         ImGui::Begin("Primitive Properties");
-        if (ImGui::DragInt("Segments",&primitiveData.segments)) {
+        if (ImGui::DragInt("Segments",&m_primitiveData.segments)) {
             AdjustLastOp(scene);
         }
-        if (primitiveData.type == PrimitiveType::Sphere) {
-            if (ImGui::DragInt("Rings",&primitiveData.rings)) {
+        if (m_primitiveData.type == PrimitiveType::Sphere) {
+            if (ImGui::DragInt("Rings",&m_primitiveData.rings)) {
                 AdjustLastOp(scene);
             }
         }
-        if (primitiveData.type != PrimitiveType::Sphere) {
-            if (ImGui::DragFloat("Height",&primitiveData.height)) {
+        if (m_primitiveData.type != PrimitiveType::Sphere) {
+            if (ImGui::DragFloat("Height",&m_primitiveData.height)) {
                 AdjustLastOp(scene);
             }
         }
-        if (ImGui::DragFloat("Radius",&primitiveData.radius)) {
+        if (ImGui::DragFloat("Radius",&m_primitiveData.radius)) {
             AdjustLastOp(scene);
         }
         ImGui::End();
@@ -237,13 +244,13 @@ void UIManager::RenderPrimitiveOp(Scene *scene) {
 }
 
 void UIManager::AdjustLastOp(Scene *scene) {
-    comp::MeshComponent* meshComp = scene->TryGetComponent<comp::MeshComponent>(primitiveData.entity);
+    comp::MeshComponent* meshComp = scene->TryGetComponent<comp::MeshComponent>(m_primitiveData.entity);
     if (meshComp == nullptr) return;
     if (meshComp->meshID != AssetHandle{}) {
-        _meshSystem->RemoveMesh(meshComp->meshID);
+        p_meshSystem->RemoveMesh(meshComp->meshID);
     }
 
-    meshComp->meshID=_meshSystem->AddPrimitive(primitiveData.type,primitiveData.rings,primitiveData.segments,primitiveData.radius,primitiveData.height);
+    meshComp->meshID=p_meshSystem->AddPrimitive(m_primitiveData.type,m_primitiveData.rings,m_primitiveData.segments,m_primitiveData.radius,m_primitiveData.height);
 }
 
 void UIManager::DrawDockspace(Scene *scene) {
@@ -252,21 +259,21 @@ void UIManager::DrawDockspace(Scene *scene) {
 
 void UIManager::RenderPanels() {
     ImGui::DockSpaceOverViewport(0,ImGui::GetMainViewport(),ImGuiDockNodeFlags_PassthruCentralNode);
-    for (auto& panel : panels) {
+    for (auto& panel : v_panels) {
         panel->Draw();
     }
 }
 
-void UIManager::RenderViewportMode(Input* input) {
-    if (input->IsKeyPressed(GLFW_KEY_TAB)) {
+void UIManager::RenderViewportMode() {
+    if (p_editorInputMap->IsActionPressed(EditorAction::ToggleViewportMode)){
         ImGui::OpenPopup("ViewportModePopup");
         ImGui::SetNextWindowPos(ImGui::GetMousePos());
     }
 
     if (ImGui::BeginPopup("ViewportModePopup")) {
-        if (ImGui::MenuItem("Solid"))    _renderer->SetViewportMode(ViewportMode::Solid);
-        if (ImGui::MenuItem("Textured")) _renderer->SetViewportMode(ViewportMode::Textured);
-        if (ImGui::MenuItem("Rendered")) _renderer->SetViewportMode(ViewportMode::Rendered);
+        if (ImGui::MenuItem("Solid"))    p_renderer->SetViewportMode(ViewportMode::Solid);
+        if (ImGui::MenuItem("Textured")) p_renderer->SetViewportMode(ViewportMode::Textured);
+        if (ImGui::MenuItem("Rendered")) p_renderer->SetViewportMode(ViewportMode::Rendered);
         ImGui::EndPopup();
     }
 }

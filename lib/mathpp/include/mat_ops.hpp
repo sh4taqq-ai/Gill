@@ -3,6 +3,7 @@
 #include "vec4.hpp"
 #include "mat3.hpp"
 #include "mat4.hpp"
+#include "matrix_transform.hpp"
 
 namespace mathpp {
     template <typename T>
@@ -31,6 +32,22 @@ namespace mathpp {
             vec3<T>(model.col[2][0], model.col[2][1], model.col[2][2])
         );
         return transpose(inverse(upper));
+    }
+    template<typename T>
+    vec3<T> TranslateFromMat4(const mat4<T>& model) {
+        vec3<T> result;
+        result[0] = model.col[3][0];
+        result[1] = model.col[3][1];
+        result[2] = model.col[3][2];
+        return result;
+    }
+    template <typename T>
+    vec3<T> ScaleFromMat4(const mat4<T>& model) {
+        vec3<T> result;
+        result[0] = length3v(vec3<T>{model.col[0][0], model.col[0][1], model.col[0][2]});
+        result[1] = length3v(vec3<T>{model.col[1][0], model.col[1][1], model.col[1][2]});
+        result[2] = length3v(vec3<T>{model.col[2][0], model.col[2][1], model.col[2][2]});
+        return result;
     }
 
 

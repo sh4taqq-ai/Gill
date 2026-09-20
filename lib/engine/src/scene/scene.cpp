@@ -5,12 +5,12 @@
 
 
 Entity Scene::CreateEntity() {
-    Entity entity = entityManager.CreateEntity();
+    Entity entity = m_entityManager.CreateEntity();
     return entity;
 }
 
 void Scene::DestroyEntity(Entity entity) {
-    entityManager.DestroyEntity(entity);
+    m_entityManager.DestroyEntity(entity);
 }
 
 Scene::~Scene() = default;
@@ -24,21 +24,14 @@ Scene::~Scene() = default;
 
 
 
-std::optional<Entity> Scene::GetSelected() const {
-    return selected;
-}
-
-void Scene::SetSelected(const std::optional<Entity> &value) {
-    selected = value;
-}
 
 
 uint32_t Scene::GetEntityCount() {
-    return entityManager.GetEntityCount();
+    return m_entityManager.GetEntityCount();
 }
 
 std::vector<Entity> Scene::GetLivingEntities() const {
-    return entityManager.GetLivingEntity();
+    return m_entityManager.GetLivingEntity();
 }
 
 

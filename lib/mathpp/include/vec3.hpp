@@ -49,6 +49,8 @@ namespace mathpp {
     vec3<T> operator-(const vec3<T>& a) {
         return vec3<T>(-a.x, -a.y, -a.z);
     }
+    template <typename T>
+    vec3<T> operator/(const vec3<T>& lhs, const T s) { return vec3<T>(lhs.x/s, lhs.y/s, lhs.z/s); }
 ;
 
     using vec3f = vec3<float>;

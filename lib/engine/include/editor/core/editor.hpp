@@ -4,6 +4,9 @@
 #include "core/component/event/event.hpp"
 #include <utility>
 #include "../include/editor/gizmo/gizmo.hpp"
+#include <GLFW/glfw3.h>
+
+
 
 
 class Renderer;
@@ -19,8 +22,12 @@ class TransformSystem;
 class Hierarchy;
 class MeshSystem;
 class MaterialSystem;
+class EditorInputMap;
+class SelectionManager;
 
 using MouseEvent = EventDelegate<int,int>;
+
+
 
 class Editor {
 public:
@@ -33,26 +40,28 @@ public:
     ~Editor();
 
 private:
-    float wdth,hght;
+    float m_width,m_height;
 
     void TrySelect(int mx, int my);
-    float deltaTime;
+    mathpp::vec3f ComputeMedianPos();
 
-    std::unique_ptr<Gizmo> gizmo;
-    std::unique_ptr<GridRenderer> gridRenderer;
-    std::unique_ptr<Input> input;
-    std::unique_ptr<UIManager> ui;
-    std::unique_ptr<Selector> selector;
-    std::unique_ptr<GizmoController> gizmoController;
-    Hierarchy* _hierarchy;
-    Camera* _camera;
-    Scene* _scene;
-    Window* _window;
-    GizmoData gizmoData;
-    MeshSystem* _meshSystem;
-    MaterialSystem* _materialSystem;
-    TransformSystem* _transformSystem;
-    Renderer* _renderer;
-    std::vector<std::pair<MouseEvent*, MouseEvent::Handle>> _handles;
-    mathpp::mat4f proj;
+    std::unique_ptr<Gizmo> up_gizmo;
+    std::unique_ptr<GridRenderer> up_gridRenderer;
+    std::unique_ptr<Input> up_input;
+    std::unique_ptr<UIManager> up_ui;
+    std::unique_ptr<Selector> up_selector;
+    std::unique_ptr<SelectionManager> up_selectionManager;
+    std::unique_ptr<GizmoController> up_gizmoController;
+    std::unique_ptr<EditorInputMap> up_editorInputMap;
+    Hierarchy* p_hierarchy;
+    Camera* p_camera;
+    Scene* p_scene;
+    Window* p_window;
+    GizmoData m_gizmoData;
+    MeshSystem* p_meshSystem;
+    MaterialSystem* p_materialSystem;
+    TransformSystem* p_transformSystem;
+    Renderer* p_renderer;
+    std::vector<std::pair<MouseEvent*, MouseEvent::Handle>> v_handles;
+    mathpp::mat4f m_proj;
 };

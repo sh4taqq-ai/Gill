@@ -14,6 +14,6 @@ public:
     void Bind(unsigned int unit = 0) const;
 
 private:
-    unsigned int ID = 0;
-    int width = 0, height = 0, channels = 0;
+    unsigned int m_ID = 0;
+    int m_width = 0, m_height = 0, m_channels = 0;
 };

@@ -4,26 +4,26 @@
 
 
 void TransformSystem::Init(Hierarchy *hierarchy) {
-    _hierarchy = hierarchy;
+    p_hierarchy = hierarchy;
 }
 void TransformSystem::SetTransform(Entity entity, const mathpp::vec3f& pos, const mathpp::quatf& rot, const mathpp::vec3f& scale) {
-    auto& t = localTransforms.Get(entity);
+    auto& t = m_localTransforms.Get(entity);
     t.position = pos; t.rotation = rot; t.scale = scale;
     MarkDirty(entity); // once
 }
 
 void TransformSystem::CalculateWorldTransform(Entity entity) {
-    auto& wt = worldTransforms.Get(entity);
+    auto& wt = m_worldTransforms.Get(entity);
     if (!wt.dirty) return; // already correct, nothing to do
 
-    auto& lt = localTransforms.Get(entity);
+    auto& lt = m_localTransforms.Get(entity);
     mathpp::mat4f parentWorld; // identity if no parent
     mathpp::quatf parentRotation;
 
-    if (auto parent = _hierarchy->TryGetParent(entity)) {
+    if (auto parent = p_hierarchy->TryGetParent(entity)) {
         CalculateWorldTransform(*parent);
-        parentWorld = worldTransforms.Get(*parent).world;
-        parentRotation = worldTransforms.Get(*parent).rotation;
+        parentWorld = m_worldTransforms.Get(*parent).world;
+        parentRotation = m_worldTransforms.Get(*parent).rotation;
     }
 
     wt.world = parentWorld * lt.getMatrix();
@@ -32,51 +32,51 @@ void TransformSystem::CalculateWorldTransform(Entity entity) {
 }
 
 void TransformSystem::MarkDirty(Entity entity) {
-    auto& wt = worldTransforms.Get(entity);
+    auto& wt = m_worldTransforms.Get(entity);
     if (wt.dirty) {
         return;
     }
     wt.dirty = true;
-    for (Entity child : _hierarchy->GetChild(entity)) {
+    for (Entity child : p_hierarchy->GetChild(entity)) {
         MarkDirty(child);
     }
 }
 
 const mathpp::mat4f& TransformSystem::GetWorldTransform(Entity entity) {
     CalculateWorldTransform(entity);
-    return worldTransforms.Get(entity).world;
+    return m_worldTransforms.Get(entity).world;
 }
 
 
 void TransformSystem::AddTransform(Entity entity) {
     comp::TransformComponent transformComponent;
     comp::WorldTransformComponent worldTransformComponent;
-    localTransforms.Insert(entity,transformComponent);
-    worldTransforms.Insert(entity,worldTransformComponent);
+    m_localTransforms.Insert(entity,transformComponent);
+    m_worldTransforms.Insert(entity,worldTransformComponent);
 
 }
 
 const comp::TransformComponent &TransformSystem::GetTransform(Entity entity) const {
-    return localTransforms.Get(entity);
+    return m_localTransforms.Get(entity);
 }
 
 void TransformSystem::RemoveTransform(Entity entity) {
-    localTransforms.Remove(entity);
-    worldTransforms.Remove(entity);
+    m_localTransforms.Remove(entity);
+    m_worldTransforms.Remove(entity);
 }
 
 void TransformSystem::SetPosition(Entity entity, const mathpp::vec3f& position) {
-    localTransforms.Get(entity).position = position;
+    m_localTransforms.Get(entity).position = position;
     MarkDirty(entity);
 }
 
 void TransformSystem::SetRotation(Entity entity, const mathpp::quatf& rotation) {
-    localTransforms.Get(entity).rotation = rotation;
+    m_localTransforms.Get(entity).rotation = rotation;
     MarkDirty(entity);
 }
 
 void TransformSystem::SetScale(Entity entity, const mathpp::vec3f& scale) {
-    localTransforms.Get(entity).scale = scale;
+    m_localTransforms.Get(entity).scale = scale;
     MarkDirty(entity);
 }
 
@@ -84,5 +84,19 @@ TransformSystem::~TransformSystem() = default;
 
 const mathpp::quatf& TransformSystem::GetWorldRotation(Entity entity) {
     CalculateWorldTransform(entity);
-    return worldTransforms.Get(entity).rotation;
+    return m_worldTransforms.Get(entity).rotation;
+}
+
+mathpp::mat4f TransformSystem::GetParentWorldTransform(Entity entity) {
+    if (auto parent = p_hierarchy->TryGetParent(entity)) {
+        return GetWorldTransform(*parent);
+    }
+    return mathpp::mat4f{}; // identity
+}
+
+mathpp::quatf TransformSystem::GetParentWorldRotation(Entity entity) {
+    if (auto parent = p_hierarchy->TryGetParent(entity)) {
+        return GetWorldRotation(*parent);
+    }
+    return mathpp::quatf{};
 }

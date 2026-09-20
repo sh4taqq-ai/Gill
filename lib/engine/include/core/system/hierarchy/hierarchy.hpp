@@ -23,6 +23,6 @@ class Hierarchy {
 
 
 private :
-    SparseSet<comp::ParentComponent> parents;
-    SparseSet<comp::ChildComponent> children;
+    SparseSet<comp::ParentComponent> m_parents;
+    SparseSet<comp::ChildComponent> m_children;
 };

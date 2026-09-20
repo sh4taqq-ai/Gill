@@ -21,17 +21,18 @@ public:
     void GetScroll(mathpp::vec2f& scroll);
     void SetCursorMode(int mode);
     void GetCursorPos(mathpp::vec2f& pos);
+    bool IsShiftHeld() const;
     ~Input();
     mathpp::vec2f GetMouseDelta() const;
     EventDelegate<int,int> mouseUp;
     EventDelegate<int,int> mouseDown;
 private:
-    mathpp::vec2f mouseDelta;
-    mathpp::vec2f lastMousePos;
-    bool firstUpdate = true;
-    bool wasHeld = false;
-    Window* window_;
+    mathpp::vec2f m_mouseDelta;
+    mathpp::vec2f m_lastMousePos;
+    bool m_firstUpdate = true;
+    bool m_wasHeld = false;
+    Window* p_window;
     static constexpr int MaxKeys = GLFW_KEY_LAST + 1;
-    std::array<bool,MaxKeys> currKeys = {};
-    std::array<bool,MaxKeys> prevKeys = {};
+    std::array<bool,MaxKeys> ar_currKeys = {};
+    std::array<bool,MaxKeys> ar_prevKeys = {};
 };

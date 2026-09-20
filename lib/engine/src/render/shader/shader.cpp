@@ -61,16 +61,16 @@ Shader::Shader(const std::string& vertPath,const std::string& fragPath) {
 
 
 
-    ID = glCreateProgram();
-    glAttachShader(ID, vertexShader);
-    glAttachShader(ID, fragmentShader);
-    glLinkProgram(ID);
-    glValidateProgram(ID);
+    m_ID = glCreateProgram();
+    glAttachShader(m_ID, vertexShader);
+    glAttachShader(m_ID, fragmentShader);
+    glLinkProgram(m_ID);
+    glValidateProgram(m_ID);
     int successLink;
-    glGetProgramiv(ID, GL_LINK_STATUS, &successLink);
+    glGetProgramiv(m_ID, GL_LINK_STATUS, &successLink);
     if (!successLink) {
         char infoLog[512];
-        glGetProgramInfoLog(ID, 512, NULL, infoLog);
+        glGetProgramInfoLog(m_ID, 512, NULL, infoLog);
         std::cerr << "Shader program link error:\n" << infoLog << std::endl;
     }
     glDeleteShader(vertexShader);
@@ -78,52 +78,52 @@ Shader::Shader(const std::string& vertPath,const std::string& fragPath) {
 }
 
 void Shader::setBool(const std::string &name, bool value) const {
-    glUniform1i(glGetUniformLocation(ID, name.c_str()),static_cast<int> (value));
+    glUniform1i(glGetUniformLocation(m_ID, name.c_str()),static_cast<int> (value));
 }
 void Shader::setInt(const std::string &name, int value) const {
-    glUniform1i(glGetUniformLocation(ID, name.c_str()),value);
+    glUniform1i(glGetUniformLocation(m_ID, name.c_str()),value);
 }
 
 void Shader::setFloat(const std::string &name, float value) const {
-    glUniform1f(glGetUniformLocation(ID, name.c_str()),value);
+    glUniform1f(glGetUniformLocation(m_ID, name.c_str()),value);
 }
 
 void Shader::setMat4f(const std::string &name, const mathpp::mat4f& matrix ) const {
     const float* p = &matrix.col[0][0];
-    glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()),1,GL_FALSE,p);
+    glUniformMatrix4fv(glGetUniformLocation(m_ID, name.c_str()),1,GL_FALSE,p);
 }
 
 void Shader::setVec2f(const std::string &name, const mathpp::vec2f& vector) const {
     const float* p = &vector.x;
-    glUniform2fv(glGetUniformLocation(ID, name.c_str()),1,p);
+    glUniform2fv(glGetUniformLocation(m_ID, name.c_str()),1,p);
 }
 
 void Shader::setVec3f(const std::string &name, const mathpp::vec3f &vector) const {
     const float*p = &vector.x;
-    glUniform3fv(glGetUniformLocation(ID, name.c_str()),1,p);
+    glUniform3fv(glGetUniformLocation(m_ID, name.c_str()),1,p);
 }
 void Shader::Use() const {
-    glUseProgram(ID);
+    glUseProgram(m_ID);
 }
 
 Shader::~Shader() {
-    glDeleteProgram(ID);
+    glDeleteProgram(m_ID);
 }
 
-Shader::Shader(Shader&& other) noexcept : ID(other.ID) {
-    other.ID = 0;
+Shader::Shader(Shader&& other) noexcept : m_ID(other.m_ID) {
+    other.m_ID = 0;
 }
 
 Shader& Shader::operator=(Shader&& other) noexcept {
     if (this != &other) {
-        glDeleteProgram(ID);   // clean up whatever this Shader currently owns
-        ID = other.ID;
-        other.ID = 0;
+        glDeleteProgram(m_ID);   // clean up whatever this Shader currently owns
+        m_ID = other.m_ID;
+        other.m_ID = 0;
     }
     return *this;
 }
 
 void Shader::setMat3f(const std::string &name, const mathpp::mat3f &matrix) const {
     const float* p = &matrix.col[0][0];
-    glUniformMatrix3fv(glGetUniformLocation(ID, name.c_str()),1,GL_FALSE,p);
+    glUniformMatrix3fv(glGetUniformLocation(m_ID, name.c_str()),1,GL_FALSE,p);
 }

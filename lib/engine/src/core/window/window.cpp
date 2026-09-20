@@ -9,14 +9,14 @@ Window::Window(unsigned int width, unsigned int height,const std::string &title)
         return;
     }
 
-    wp = glfwCreateWindow(width, height, title.c_str(), NULL, NULL);
-    if (!wp) {
+    p_wp = glfwCreateWindow(width, height, title.c_str(), NULL, NULL);
+    if (!p_wp) {
         std::cerr << "glfwCreateWindow() failed" << std::endl;
         glfwTerminate();
         return;
     }
 
-    glfwMakeContextCurrent(wp);
+    glfwMakeContextCurrent(p_wp);
 
     if (!gladLoadGL((GLADloadfunc)glfwGetProcAddress)) {
         std::cerr << "gladLoadGL() failed" << std::endl;
@@ -29,11 +29,11 @@ Window::Window(unsigned int width, unsigned int height,const std::string &title)
 }
 
 bool Window::ShouldClose() {
-    return glfwWindowShouldClose(wp);
+    return glfwWindowShouldClose(p_wp);
 }
 
 void Window::SwapBuffers() {
-    glfwSwapBuffers(wp);
+    glfwSwapBuffers(p_wp);
 }
 
 void Window::PollEvents() {
@@ -41,22 +41,22 @@ void Window::PollEvents() {
 }
 
  GLFWwindow *Window::GetWindow() {
-    return wp;
+    return p_wp;
 }
 
 void Window::GetCursorPos(double &x, double &y) {
-    glfwGetCursorPos(wp, &x, &y);
+    glfwGetCursorPos(p_wp, &x, &y);
 }
 
 int Window::GetLeftMouseButton() const {
-    return static_cast<bool>(glfwGetMouseButton(wp, GLFW_MOUSE_BUTTON_LEFT));
+    return static_cast<bool>(glfwGetMouseButton(p_wp, GLFW_MOUSE_BUTTON_LEFT));
 }
 
 Window::~Window() {
-    glfwDestroyWindow(wp);
+    glfwDestroyWindow(p_wp);
 }
 
 
 void Window::GetFrameBufferSize(int *width, int *height) {
-    glfwGetFramebufferSize(wp,width,height);
+    glfwGetFramebufferSize(p_wp,width,height);
 }

@@ -51,7 +51,7 @@ vec3 Schlick_Approx(float VdotH, vec3 F0) {
     return F0 + (vec3(1.0) - F0) * pow(clamp(1.0 - VdotH, 0.0, 1.0), 5.0);
 }
 
-vec3 PBRShader(vec3 albedo, vec3 normal, vec3 view, vec3 light, float rough, float metal) {
+vec3 BRDFShader(vec3 albedo, vec3 normal, vec3 view, vec3 light, float rough, float metal) {
     vec3 halfVec = ComputeHalf(light, view);
 
     float NdotL = max(dot(normal, light), 0.0);
@@ -85,9 +85,9 @@ void main() {
     vec3 light = normalize(lightDir);
     vec3 normal = normalize(normals);
 
-    vec3 color = PBRShader(albedo, normal, view, light, roughness, metallic);
+    vec3 color = BRDFShader(albedo, normal, view, light, roughness, metallic);
 
-    // Basic Tone Mapping + Gamma Correction (Required for PBR to look right!)
+    // Basic Tone Mapping + Gamma Correction
     color = color / (color + vec3(1.0)); // Reinhard
     color = pow(color, vec3(1.0 / 2.2));  // Linear to sRGB space
 

@@ -26,14 +26,14 @@ public:
     mathpp::mat4f GetViewMatrix() const override;
 
 private:
-    mathpp::vec3f position;
-    mathpp::vec3f camFront;
-    mathpp::mat4f viewMatrix;
+    mathpp::vec3f m_position;
+    mathpp::vec3f m_camFront;
+    mathpp::mat4f m_viewMatrix;
 
-    float yaw = -90.0f;
-    float pitch = 0.0f;
-    float speed = 5.0f;
-    float sens = 0.1f;
+    float m_yaw = -90.0f;
+    float m_pitch = 0.0f;
+    float m_speed = 5.0f;
+    float m_sens = 0.1f;
 };
 
 //Orbit camera
@@ -44,14 +44,14 @@ public:
     mathpp::mat4f GetViewMatrix() const override;
 
 private:
-    mathpp::vec3f eye;
-    mathpp::vec3f target;
-    mathpp::mat4f viewMatrix;
+    mathpp::vec3f m_eye;
+    mathpp::vec3f m_target;
+    mathpp::mat4f m_viewMatrix;
 
-    float yaw = 0.0f;
-    float pitch = 0.0f;
-    float distance = 10.0f;
-    float sens = 0.1f;
+    float m_yaw = 0.0f;
+    float m_pitch = 0.0f;
+    float m_distance = 10.0f;
+    float m_sens = 0.1f;
 };
 
 // Owner / mode switcher
@@ -65,11 +65,11 @@ public:
     mathpp::mat4f GetViewMatrix() const;
 
     void Switch();
-    CameraType GetType() const { return mode; }
+    CameraType GetType() const { return em_mode; }
 
 private:
-    FreeCamera freeCam;
-    OrbitCamera orbitCam;
-    ICamera* active;
-    CameraType mode;
+    FreeCamera m_freeCam;
+    OrbitCamera m_orbitCam;
+    ICamera* p_active;
+    CameraType em_mode;
 };

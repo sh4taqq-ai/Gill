@@ -119,10 +119,16 @@ namespace mathpp {
     }
 
     template<typename T>
-    T length(const vec3<T>& v) {
+    T length3v(const vec3<T>& v) {
 
     T result = sqrt(dot(v,v));
 
+    return result;
+}
+
+    template<typename T>
+    T length4v(const vec4<T>& v) {
+    T result = sqrt(dot(v,v));
     return result;
 }
 

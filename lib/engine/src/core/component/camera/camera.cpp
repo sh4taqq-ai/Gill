@@ -4,47 +4,47 @@
 
 //  FreeCamera
 
-void FreeCamera::Update(Input* input, float deltaTime, const mathpp::vec3f& /*target*/) {
+void FreeCamera::Update(Input* input, float deltaTime, const mathpp::vec3f&) {
     mathpp::vec2f delta = input->GetMouseDelta();
 
     if (input->IsMouseButtonDown(GLFW_MOUSE_BUTTON_MIDDLE)) {
-        yaw += delta.x * sens;
-        pitch -= delta.y * sens;
-        pitch = mathpp::clamp(pitch, -89.9f, 89.9f);
+        m_yaw += delta.x * m_sens;
+        m_pitch -= delta.y * m_sens;
+        m_pitch = mathpp::clamp(m_pitch, -89.9f, 89.9f);
     }
 
     mathpp::vec3f front;
-    front.x = cos(mathpp::to_radians(yaw)) * cos(mathpp::to_radians(pitch));
-    front.y = sin(mathpp::to_radians(pitch));
-    front.z = sin(mathpp::to_radians(yaw)) * cos(mathpp::to_radians(pitch));
-    camFront = mathpp::normalize(front);
+    front.x = cos(mathpp::to_radians(m_yaw)) * cos(mathpp::to_radians(m_pitch));
+    front.y = sin(mathpp::to_radians(m_pitch));
+    front.z = sin(mathpp::to_radians(m_yaw)) * cos(mathpp::to_radians(m_pitch));
+    m_camFront = mathpp::normalize(front);
     if (input->IsKeyDown(GLFW_KEY_W))
-    {position += camFront * speed * deltaTime;}
+    {m_position += m_camFront * m_speed * deltaTime;}
     if (input->IsKeyDown(GLFW_KEY_S))
-    {position -= camFront * speed * deltaTime;}
+    {m_position -= m_camFront * m_speed * deltaTime;}
     if (input->IsKeyDown(GLFW_KEY_A))
-    {position -= mathpp::normalize(mathpp::cross(camFront, {0.0f, 1.0f, 0.0f})) * speed * deltaTime;}
+    {m_position -= mathpp::normalize(mathpp::cross(m_camFront, {0.0f, 1.0f, 0.0f})) * m_speed * deltaTime;}
     if (input->IsKeyDown(GLFW_KEY_D))
-    {position += mathpp::normalize(mathpp::cross(camFront, {0.0f, 1.0f, 0.0f})) * speed * deltaTime;}
+    {m_position += mathpp::normalize(mathpp::cross(m_camFront, {0.0f, 1.0f, 0.0f})) * m_speed * deltaTime;}
     if (input->IsKeyDown(GLFW_KEY_SPACE))
-    {position -= mathpp::normalize(mathpp::cross(camFront, {0.0f, 0.0f, 1.0f})) * speed * deltaTime;}
+    {m_position -= mathpp::normalize(mathpp::cross(m_camFront, {0.0f, 0.0f, 1.0f})) * m_speed * deltaTime;}
     if (input->IsKeyDown(GLFW_KEY_LEFT_SHIFT))
-    {position += mathpp::normalize(mathpp::cross(camFront, {0.0f, 0.0f, 1.0f})) * speed * deltaTime;}
+    {m_position += mathpp::normalize(mathpp::cross(m_camFront, {0.0f, 0.0f, 1.0f})) * m_speed * deltaTime;}
 
     if (input->IsMouseButtonDown(GLFW_MOUSE_BUTTON_MIDDLE)) {
         input->SetCursorMode(2);
     }
     else {input->SetCursorMode(0);}
 
-    viewMatrix = mathpp::look_at(position, camFront + position, {0.0f, 1.0f, 0.0f});
+    m_viewMatrix = mathpp::look_at(m_position, m_camFront + m_position, {0.0f, 1.0f, 0.0f});
 }
 
 mathpp::vec3f FreeCamera::GetPosition() const {
-    return position;
+    return m_position;
 }
 
 mathpp::mat4f FreeCamera::GetViewMatrix() const {
-    return viewMatrix;
+    return m_viewMatrix;
 }
 
 
@@ -53,54 +53,54 @@ mathpp::mat4f FreeCamera::GetViewMatrix() const {
 void OrbitCamera::Update(Input* input, float /*deltaTime*/, const mathpp::vec3f& targetPos) {
     mathpp::vec2f delta = input->GetMouseDelta();
 
-    yaw += delta.x * sens;
-    pitch -= delta.y * sens;
-    pitch = mathpp::clamp(pitch, -89.9f, 89.9f); // same gimbal-flip guard as FreeCamera
+    m_yaw += delta.x * m_sens;
+    m_pitch -= delta.y * m_sens;
+    m_pitch = mathpp::clamp(m_pitch, -89.9f, 89.9f); // same gimbal-flip guard as FreeCamera
 
-    target = targetPos;
+    m_target = targetPos;
 
-    float yawRad = mathpp::to_radians(yaw);
-    float pitchRad = mathpp::to_radians(pitch);
+    float yawRad = mathpp::to_radians(m_yaw);
+    float pitchRad = mathpp::to_radians(m_pitch);
 
-    eye = mathpp::vec3f();
-    eye.x = target.x + distance * cos(pitchRad) * sin(yawRad);
-    eye.y = target.y + distance * sin(pitchRad);
-    eye.z = target.z + distance * cos(pitchRad) * cos(yawRad);
+    m_eye = mathpp::vec3f();
+    m_eye.x = m_target.x + m_distance * cos(pitchRad) * sin(yawRad);
+    m_eye.y = m_target.y + m_distance * sin(pitchRad);
+    m_eye.z = m_target.z + m_distance * cos(pitchRad) * cos(yawRad);
 
-    viewMatrix = mathpp::look_at(eye, target, {0.0f, 1.0f, 0.0f});
+    m_viewMatrix = mathpp::look_at(m_eye, m_target, {0.0f, 1.0f, 0.0f});
 }
 
 mathpp::vec3f OrbitCamera::GetPosition() const {
-    return eye;
+    return m_eye;
 }
 
 mathpp::mat4f OrbitCamera::GetViewMatrix() const {
-    return viewMatrix;
+    return m_viewMatrix;
 }
 
 //  Camera
 
-Camera::Camera() : active(&freeCam), mode(CameraType::Free) {}
+Camera::Camera() : p_active(&m_freeCam), em_mode(CameraType::Free) {}
 
 void Camera::Update(Input* input, float deltaTime, const mathpp::vec3f& target = {0.0f,0.0f,0.0f}) {
-    active->Update(input, deltaTime, target);
+    p_active->Update(input, deltaTime, target);
 }
 
 mathpp::vec3f Camera::GetPosition() const {
-    return active->GetPosition();
+    return p_active->GetPosition();
 }
 
 mathpp::mat4f Camera::GetViewMatrix() const {
-    return active->GetViewMatrix();
+    return p_active->GetViewMatrix();
 }
 
 void Camera::Switch() {
-    if (mode == CameraType::Free) {
-        mode = CameraType::Orbit;
-        active = &orbitCam;
+    if (em_mode == CameraType::Free) {
+        em_mode = CameraType::Orbit;
+        p_active = &m_orbitCam;
     } else {
-        mode = CameraType::Free;
-        active = &freeCam;
+        em_mode = CameraType::Free;
+        p_active = &m_freeCam;
     }
 }
 Camera::~Camera() = default;
