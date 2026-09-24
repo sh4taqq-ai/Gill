@@ -28,8 +28,6 @@ void FreeCamera::Update(Input* input, float deltaTime, const mathpp::vec3f&) {
     {m_position += mathpp::normalize(mathpp::cross(m_camFront, {0.0f, 1.0f, 0.0f})) * m_speed * deltaTime;}
     if (input->IsKeyDown(GLFW_KEY_SPACE))
     {m_position -= mathpp::normalize(mathpp::cross(m_camFront, {0.0f, 0.0f, 1.0f})) * m_speed * deltaTime;}
-    if (input->IsKeyDown(GLFW_KEY_LEFT_SHIFT))
-    {m_position += mathpp::normalize(mathpp::cross(m_camFront, {0.0f, 0.0f, 1.0f})) * m_speed * deltaTime;}
 
     if (input->IsMouseButtonDown(GLFW_MOUSE_BUTTON_MIDDLE)) {
         input->SetCursorMode(2);

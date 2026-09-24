@@ -16,6 +16,7 @@
 #include <iostream>
 #include "editor/inputAction/inputAction.hpp"
 #include "editor/selector/selectionManager.hpp"
+#include "editor/outline/outline.hpp"
 
 
 void Editor::Init(float Width, float Height,Window* window,Scene* scene,const mathpp::mat4f& projection, Camera* camera,TransformSystem* transformSystem,Hierarchy* hierarchy,MeshSystem* meshSystem, MaterialSystem* materialSystem,Renderer* renderer) {
@@ -35,14 +36,16 @@ void Editor::Init(float Width, float Height,Window* window,Scene* scene,const ma
     p_meshSystem = meshSystem;
     p_materialSystem = materialSystem;
     up_input = std::make_unique<Input>(p_window);
+    up_selectionManager = std::make_unique<SelectionManager>();
     up_editorInputMap = std::make_unique<EditorInputMap>(up_input.get());
+    up_outline = std::make_unique<Outline>();
     up_ui = std::make_unique<UIManager>();
     up_gizmo = std::make_unique<Gizmo>();
     up_gridRenderer->Init(100);
     up_gizmo->Init(m_width,m_height,&m_gizmoData,p_transformSystem);
-    up_ui->Init(window,p_scene,p_transformSystem,p_hierarchy,&m_gizmoData,p_renderer,p_meshSystem,p_materialSystem,up_editorInputMap.get(),up_selectionManager.get());
+    up_ui->Init(window,p_scene,p_transformSystem,p_hierarchy,&m_gizmoData,p_renderer,p_meshSystem,p_materialSystem,up_editorInputMap.get(),up_selectionManager.get(),up_input.get());
     up_selector->Init(m_width,m_height);
-    up_selectionManager = std::make_unique<SelectionManager>();
+    up_outline->Init(meshSystem,transformSystem,up_selectionManager.get());
     up_gizmoController->Init(m_width,m_height,&m_gizmoData,p_transformSystem,up_selectionManager.get());
     auto handle1 = up_input->mouseDown.Subscribe([this](int mx, int my) { OnMouseDown(mx, my); });
     auto handle2 = up_input->mouseUp.Subscribe([this](int mx, int my) {OnMouseUp(mx,my); });
@@ -73,6 +76,7 @@ void Editor::Run(float deltaT) {
         up_gizmoController->Apply(p_camera->GetViewMatrix(), m_proj, pos.x, pos.y);
     }
     up_selector->RenderScene(p_scene,p_camera->GetViewMatrix(),m_proj,p_transformSystem,p_meshSystem);
+    up_outline->Draw(p_scene,m_proj,p_camera->GetViewMatrix());
     up_ui->BeginFrame();
     up_ui->RenderPanels();
     up_ui->RenderPrimitiveOp(p_scene);

@@ -8,9 +8,26 @@ class Scene;
 
 using Entity = uint32_t;
 
-struct EditorContext{
+struct GizmoData;
+
+class TransformSystem;
+class Renderer;
+class EditorInputMap;
+class SelectionManager;
+class Hierarchy;
+class Input;
+
+struct EditorContext {
+    Input* p_input;
+    GizmoData* p_gizmoData;
+    TransformSystem* p_transformSystem;
+    Renderer* p_renderer;
     MeshSystem* p_meshSystem;
     MaterialSystem* p_materialSystem;
+    EditorInputMap* p_editorInputMap;
+    SelectionManager* p_selectionManager;
+    Scene* p_scene;
+    Hierarchy* p_hierarchy;
 };
 
 struct ComponentTypeInfo {

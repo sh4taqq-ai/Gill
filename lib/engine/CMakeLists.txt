@@ -65,9 +65,12 @@ add_library(engine STATIC
         src/editor/inputAction/inputAction.cpp
         include/editor/selector/selectionManager.hpp
         src/editor/selector/selectionManager.cpp
+        include/editor/outline/outline.hpp
+        src/editor/outline/outline.cpp
 
 
 )
 
 target_link_libraries(engine PUBLIC glad glfw mathpp imgui stb_image magic_enum::magic_enum)
 target_include_directories(engine PUBLIC include)
+target_compile_definitions(engine PUBLIC GLFW_INCLUDE_NONE)

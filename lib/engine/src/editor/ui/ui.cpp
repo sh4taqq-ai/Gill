@@ -13,23 +13,28 @@
 #include "editor/selector/selectionManager.hpp"
 
 
-void UIManager::Init(Window* window,Scene* scene,TransformSystem* transformSystem, Hierarchy* hierarchy,GizmoData* gizmoData,Renderer* renderer,MeshSystem* meshSystem,MaterialSystem* materialSystem,EditorInputMap* editorInputMap,SelectionManager* selectionManager) {
+void UIManager::Init(Window* window,Scene* scene,TransformSystem* transformSystem, Hierarchy* hierarchy,GizmoData* gizmoData,Renderer* renderer,MeshSystem* meshSystem,MaterialSystem* materialSystem,EditorInputMap* editorInputMap,SelectionManager* selectionManager,Input* input) {
     ImGui::CreateContext();
-    p_renderer = renderer;
     p_io_ptr = &ImGui::GetIO(); (void)p_io_ptr;
     p_io_ptr->ConfigFlags |= ImGuiConfigFlags_DockingEnable; //Enable Docking
     p_io_ptr->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
     p_io_ptr->ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;  // Enable Gamepad Controls
-    p_meshSystem = meshSystem;
-    p_transformSystem = transformSystem;
-    this->p_editorInputMap = editorInputMap;
+    m_ctx.p_input = input;
+    m_ctx.p_hierarchy = hierarchy;
+    m_ctx.p_editorInputMap = editorInputMap;
+    m_ctx.p_gizmoData = gizmoData;
+    m_ctx.p_materialSystem =  materialSystem;
+    m_ctx.p_meshSystem = meshSystem;
+    m_ctx.p_renderer = renderer;
+    m_ctx.p_transformSystem = transformSystem;
+    m_ctx.p_selectionManager = selectionManager;
+    m_ctx.p_scene = scene;
 
     ImGui_ImplOpenGL3_Init("#version 330");
     ImGui_ImplGlfw_InitForOpenGL(window->GetWindow(),true);
-    EditorContext ctx{meshSystem,materialSystem};
-    v_panels.emplace_back(std::make_unique<PropertiesPanel>(scene, transformSystem,selectionManager,ctx));
-    v_panels.emplace_back(std::make_unique<HierarchyPanel>(scene, hierarchy,transformSystem));
-    v_panels.emplace_back(std::make_unique<GizmoPanel>(gizmoData));
+    v_panels.emplace_back(std::make_unique<PropertiesPanel>(m_ctx));
+    v_panels.emplace_back(std::make_unique<HierarchyPanel>(m_ctx));
+    v_panels.emplace_back(std::make_unique<GizmoPanel>(m_ctx));
 }
 
 void UIManager::BeginFrame() {
@@ -45,7 +50,7 @@ void UIManager::EndFrame() {
 
 
 void UIManager::AddPrimitive(Scene* scene, PrimitiveType type) {
-   AssetHandle meshID = p_meshSystem->AddPrimitive(type,m_primitiveData.rings,m_primitiveData.segments,m_primitiveData.radius,m_primitiveData.height);
+   AssetHandle meshID = m_ctx.p_meshSystem->AddPrimitive(type,m_primitiveData.rings,m_primitiveData.segments,m_primitiveData.radius,m_primitiveData.height);
    Entity entity = scene->CreateEntity();
     comp::MeshComponent meshComp;
     comp::MaterialComponent matComp;
@@ -53,7 +58,7 @@ void UIManager::AddPrimitive(Scene* scene, PrimitiveType type) {
     meshComp.meshID = meshID;
     m_primitiveData.entity = entity;
     m_primitiveData.type = type;
-    p_transformSystem->AddTransform(entity);
+    m_ctx.p_transformSystem->AddTransform(entity);
     scene->InsertComponent(entity,meshComp);
 }
 
@@ -88,17 +93,17 @@ bool UIManager::WantCaptureMouse() {
 void GizmoPanel::Draw() {
     ImGui::Begin("Gizmo");
 
-    const char* modeLabel = p_gizmoData->mode == GizmoMode::Translate ? "Translate"
-                           : p_gizmoData->mode == GizmoMode::Rotate ? "Rotate" : "Scale";
+    const char* modeLabel = m_ctx.p_gizmoData->mode == GizmoMode::Translate ? "Translate"
+                           : m_ctx.p_gizmoData->mode == GizmoMode::Rotate ? "Rotate" : "Scale";
     if (ImGui::Button(modeLabel, ImVec2{80, 20})) {
-        SwitchMode(p_gizmoData);
+        SwitchMode(m_ctx.p_gizmoData);
     }
 
     ImGui::SameLine();
 
-    const char* frameLabel = p_gizmoData->referenceFrame == ReferenceFrame::Local ? "Local" : "World";
+    const char* frameLabel = m_ctx.p_gizmoData->referenceFrame == ReferenceFrame::Local ? "Local" : "World";
     if (ImGui::Button(frameLabel, ImVec2{80, 20})) {
-        ToggleReferenceFrame(p_gizmoData);
+        ToggleReferenceFrame(m_ctx.p_gizmoData);
     }
 
     ImGui::End();
@@ -106,30 +111,30 @@ void GizmoPanel::Draw() {
 
 void PropertiesPanel::Draw(){
     ImGui::Begin("Properties");
-    if (!p_selectionManager->GetActiveSelected().has_value()) { ImGui::End(); return; }
-    Entity entity = p_selectionManager->GetActiveSelected().value();
+    if (!m_ctx.p_selectionManager->GetActiveSelected().has_value()) { ImGui::End(); return; }
+    Entity entity = m_ctx.p_selectionManager->GetActiveSelected().value();
     ImGui::Text("Entity: %u", entity);
     ImGui::NewLine();
-    comp::TransformComponent transform = p_transformSystem->GetTransform(entity); // local copy, read-only source
+    comp::TransformComponent transform = m_ctx.p_transformSystem->GetTransform(entity); // local copy, read-only source
 
     mathpp::vec3f pos = transform.position;
     if (ImGui::InputFloat3("Position", &pos.x)) {
-        p_transformSystem->SetPosition(entity, pos);
+        m_ctx.p_transformSystem->SetPosition(entity, pos);
     }
 
     mathpp::vec3f euler = mathpp::QuatToEulerAngles(transform.rotation);
     if (ImGui::InputFloat3("Rotation", &euler.x)) {
-        p_transformSystem->SetRotation(entity, mathpp::QuatFromEulerAngles(euler));
+        m_ctx.p_transformSystem->SetRotation(entity, mathpp::QuatFromEulerAngles(euler));
     }
 
     mathpp::vec3f scale = transform.scale;
     if (ImGui::InputFloat3("Scale", &scale.x)) {
-        p_transformSystem->SetScale(entity, scale);
+        m_ctx.p_transformSystem->SetScale(entity, scale);
     }
     for (const auto& type : ComponentTypes) {
-        if (type.Has(p_scene, entity)) {
+        if (type.Has(m_ctx.p_scene, entity)) {
             if (ImGui::CollapsingHeader(type.name)) {
-                type.DrawInspector(p_scene, entity, ctx);
+                type.DrawInspector(m_ctx.p_scene, entity, m_ctx);
             }
         }
     }
@@ -138,9 +143,9 @@ void PropertiesPanel::Draw(){
     }
     if (ImGui::BeginPopup("Add Component")) {
         for (const auto& type : ComponentTypes) {
-            if (!type.Has(p_scene, entity)) {
+            if (!type.Has(m_ctx.p_scene, entity)) {
                 if (ImGui::Selectable(type.name)) {
-                    type.Add(p_scene, entity, ctx);
+                    type.Add(m_ctx.p_scene, entity, m_ctx);
                 }
             }
         }
@@ -153,10 +158,10 @@ void PropertiesPanel::Draw(){
 
 
 void HierarchyPanel::Draw() {
-    std::vector<Entity> liveEntities = p_scene->GetLivingEntities();
+    std::vector<Entity> liveEntities = m_ctx.p_scene->GetLivingEntities();
     if (ImGui::Begin("Hierarchy")) {
         for (uint32_t entity : liveEntities) {
-            std::optional<Entity> parent = p_hierarchy->TryGetParent(entity);
+            std::optional<Entity> parent = m_ctx.p_hierarchy->TryGetParent(entity);
             if (!parent.has_value()) {
                 DrawEntityNode(entity);
             }
@@ -167,8 +172,8 @@ void HierarchyPanel::Draw() {
         if (ImGui::BeginDragDropTarget()) {
             if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ENTITY_DRAG")) {
                 Entity draggedEntity = *(Entity*)payload->Data;
-                p_hierarchy->Unparent(draggedEntity);
-                p_transformSystem->MarkDirty(draggedEntity);
+                m_ctx.p_hierarchy->Unparent(draggedEntity);
+                m_ctx.p_transformSystem->MarkDirty(draggedEntity);
             }
             ImGui::EndDragDropTarget();
         }
@@ -179,14 +184,19 @@ void HierarchyPanel::Draw() {
 
 void HierarchyPanel::DrawEntityNode(Entity entity) {
     ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
-    if (p_selectionManager->GetActiveSelected().has_value() && p_selectionManager->GetActiveSelected().value() == entity) {
+    if (m_ctx.p_selectionManager->GetActiveSelected().has_value() && m_ctx.p_selectionManager->GetActiveSelected().value() == entity) {
         flags |= ImGuiTreeNodeFlags_Selected;
     }
     std::string title = "Entity " + std::to_string(entity);
-    std::vector children = p_hierarchy->GetChild(entity);
+    std::vector children = m_ctx.p_hierarchy->GetChild(entity);
     bool isNodeOpen = ImGui::TreeNodeEx((void*)(intptr_t)entity, flags, "%s", title.c_str());
     if (ImGui::IsItemClicked()) {
-        p_scene->SetSelected(entity);
+        if (m_ctx.p_input->IsShiftHeld()) {
+            m_ctx.p_selectionManager->ToggleSelection(entity);
+        }
+        else {
+            m_ctx.p_selectionManager->SetSelected(entity);
+        }
     }
     if (ImGui::BeginDragDropSource()) {
         ImGui::SetDragDropPayload("ENTITY_DRAG", &entity, sizeof(Entity));
@@ -199,8 +209,8 @@ void HierarchyPanel::DrawEntityNode(Entity entity) {
         if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ENTITY_DRAG"))
         {
             Entity draggedEntity = *(Entity*)payload->Data;
-            p_hierarchy->SetParent(draggedEntity, entity);
-            p_transformSystem->MarkDirty(draggedEntity);
+            m_ctx.p_hierarchy->SetParent(draggedEntity, entity);
+            m_ctx.p_transformSystem->MarkDirty(draggedEntity);
         }
         ImGui::EndDragDropTarget();
     }
@@ -247,10 +257,10 @@ void UIManager::AdjustLastOp(Scene *scene) {
     comp::MeshComponent* meshComp = scene->TryGetComponent<comp::MeshComponent>(m_primitiveData.entity);
     if (meshComp == nullptr) return;
     if (meshComp->meshID != AssetHandle{}) {
-        p_meshSystem->RemoveMesh(meshComp->meshID);
+        m_ctx.p_meshSystem->RemoveMesh(meshComp->meshID);
     }
 
-    meshComp->meshID=p_meshSystem->AddPrimitive(m_primitiveData.type,m_primitiveData.rings,m_primitiveData.segments,m_primitiveData.radius,m_primitiveData.height);
+    meshComp->meshID=m_ctx.p_meshSystem->AddPrimitive(m_primitiveData.type,m_primitiveData.rings,m_primitiveData.segments,m_primitiveData.radius,m_primitiveData.height);
 }
 
 void UIManager::DrawDockspace(Scene *scene) {
@@ -265,15 +275,15 @@ void UIManager::RenderPanels() {
 }
 
 void UIManager::RenderViewportMode() {
-    if (p_editorInputMap->IsActionPressed(EditorAction::ToggleViewportMode)){
+    if (m_ctx.p_editorInputMap->IsActionPressed(EditorAction::ToggleViewportMode)){
         ImGui::OpenPopup("ViewportModePopup");
         ImGui::SetNextWindowPos(ImGui::GetMousePos());
     }
 
     if (ImGui::BeginPopup("ViewportModePopup")) {
-        if (ImGui::MenuItem("Solid"))    p_renderer->SetViewportMode(ViewportMode::Solid);
-        if (ImGui::MenuItem("Textured")) p_renderer->SetViewportMode(ViewportMode::Textured);
-        if (ImGui::MenuItem("Rendered")) p_renderer->SetViewportMode(ViewportMode::Rendered);
+        if (ImGui::MenuItem("Solid"))    m_ctx.p_renderer->SetViewportMode(ViewportMode::Solid);
+        if (ImGui::MenuItem("Textured")) m_ctx.p_renderer->SetViewportMode(ViewportMode::Textured);
+        if (ImGui::MenuItem("Rendered")) m_ctx.p_renderer->SetViewportMode(ViewportMode::Rendered);
         ImGui::EndPopup();
     }
 }

@@ -8,7 +8,7 @@
 
 
 
-
+class Outline;
 class Renderer;
 class GizmoController;
 class Input;
@@ -53,6 +53,7 @@ private:
     std::unique_ptr<SelectionManager> up_selectionManager;
     std::unique_ptr<GizmoController> up_gizmoController;
     std::unique_ptr<EditorInputMap> up_editorInputMap;
+    std::unique_ptr<Outline> up_outline;
     Hierarchy* p_hierarchy;
     Camera* p_camera;
     Scene* p_scene;
