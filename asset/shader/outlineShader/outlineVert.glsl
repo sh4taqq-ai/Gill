@@ -5,7 +5,7 @@ layout(location = 1) in vec3 aNormal;
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
-uniform float scaleFactor = 3.0f;
+uniform float scaleFactor = 0.015f;
 
 
 out vec3 normals;

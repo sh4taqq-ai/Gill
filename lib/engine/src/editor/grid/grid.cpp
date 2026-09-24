@@ -13,7 +13,9 @@ void GridRenderer::Init(float extent) {
 }
 
 void GridRenderer::Render(const mathpp::mat4f& view, const mathpp::mat4f& projection, const mathpp::vec3f& camPos) {
+    mathpp::mat4f model = mathpp::translate(mathpp::mat4f{}, {camPos.x, 0.0f, camPos.z});
     up_gridShader->Use();
+    up_gridShader->setMat4f("model",model);
     up_gridShader->setVec3f("cameraPos", camPos);
     up_gridShader->setMat4f("view", view);
     up_gridShader->setMat4f("projection", projection);

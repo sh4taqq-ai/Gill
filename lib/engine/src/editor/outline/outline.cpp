@@ -22,19 +22,19 @@ void Outline::Draw(const Scene* scene,const mathpp::mat4f& proj, const mathpp::m
         DrawEntity(scene,proj,view,entity,meshComp);
     });
     glCullFace(GL_BACK);
+    glDisable(GL_CULL_FACE);
 }
 
 void Outline::DrawEntity(const Scene* scene,const mathpp::mat4f &proj, const mathpp::mat4f &view,Entity entity,const comp::MeshComponent& meshComp) const {
-    auto selected = p_selectionManager->GetAllSelected();
+    const auto& selected = p_selectionManager->GetAllSelected();
     if (!selected.contains(entity)) return; //safeguard
-    if (entity != p_selectionManager->GetActiveSelected()) return;
     auto mesh = p_meshSystem->GetMesh(meshComp.meshID);
     auto worldTransform = p_transformSystem->GetWorldTransform(entity);
     if (!mesh) return;
 
     up_outlineShader->setMat4f("model",worldTransform);
     up_outlineShader->setMat4f("view",view);
-    up_outlineShader->setMat4f("proj",proj);
+    up_outlineShader->setMat4f("projection",proj);
     mesh->Draw();
 }
 
