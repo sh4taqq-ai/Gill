@@ -26,7 +26,7 @@ void Outline::Draw(const Scene* scene,const mathpp::mat4f& proj, const mathpp::m
 }
 
 void Outline::DrawEntity(const Scene* scene,const mathpp::mat4f &proj, const mathpp::mat4f &view,Entity entity,const comp::MeshComponent& meshComp) const {
-    const auto& selected = p_selectionManager->GetAllSelected();
+    const  auto& selected = p_selectionManager->GetAllSelected();
     if (!selected.contains(entity)) return; //safeguard
     auto mesh = p_meshSystem->GetMesh(meshComp.meshID);
     auto worldTransform = p_transformSystem->GetWorldTransform(entity);

@@ -1,4 +1,6 @@
 #pragma once
+#include "vec3.hpp"
+#include "vec2.hpp"
 
 namespace mathpp {
     template <typename T>
@@ -23,6 +25,28 @@ namespace mathpp {
                 case 2: return z;
                 default: return w;
             }
+        }
+        vec4& operator+=(const vec4& rhs) {
+            x += rhs.x;
+            y += rhs.y;
+            z += rhs.z;
+            w += rhs.w;
+            return *this;
+        }
+
+        vec4& operator-=(const vec4& rhs) {
+            x -= rhs.x;
+            y -= rhs.y;
+            z -= rhs.z;
+            w -= rhs.w;
+            return *this;
+        }
+
+        vec3<T> xyz() const {
+            return vec3<T>{x, y, z};
+        }
+        vec2<T> xy() const {
+            return vec2<T>{x, y};
         }
     };
 

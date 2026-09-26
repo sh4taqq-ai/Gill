@@ -51,3 +51,4 @@ struct TransformSnapshot {
     mathpp::quatf worldRot;
     mathpp::vec3f worldScale;
 };
+

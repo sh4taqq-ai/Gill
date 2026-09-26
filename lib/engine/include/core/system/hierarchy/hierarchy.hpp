@@ -14,6 +14,7 @@ class Hierarchy {
     void RemoveAllChildren(Entity parent);
     void RemoveParent(Entity child);
   bool  IsDescendant(Entity potentialDescendant, Entity of);
+    bool HasParent(Entity child);
    std::optional<Entity>TryGetParent(Entity child);
     std::optional<Entity> TryGetChild(Entity child);
     std::vector<Entity> GetChild(Entity parent);

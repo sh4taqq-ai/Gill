@@ -46,7 +46,7 @@ void Editor::Init(float Width, float Height,Window* window,Scene* scene,const ma
     up_ui->Init(window,p_scene,p_transformSystem,p_hierarchy,&m_gizmoData,p_renderer,p_meshSystem,p_materialSystem,up_editorInputMap.get(),up_selectionManager.get(),up_input.get());
     up_selector->Init(m_width,m_height);
     up_outline->Init(meshSystem,transformSystem,up_selectionManager.get());
-    up_gizmoController->Init(m_width,m_height,&m_gizmoData,p_transformSystem,up_selectionManager.get());
+    up_gizmoController->Init(m_width,m_height,&m_gizmoData,p_transformSystem,up_selectionManager.get(),hierarchy);
     auto handle1 = up_input->mouseDown.Subscribe([this](int mx, int my) { OnMouseDown(mx, my); });
     auto handle2 = up_input->mouseUp.Subscribe([this](int mx, int my) {OnMouseUp(mx,my); });
 

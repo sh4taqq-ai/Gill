@@ -65,6 +65,10 @@ void Hierarchy::RemoveChild(Entity parent, Entity child) {
     }
 }
 
+bool Hierarchy::HasParent(Entity child) {
+    return m_parents.Has(child);
+}
+
 void Hierarchy::RemoveAllChildren(Entity parent) {
     if (m_children.Has(parent)) {
         comp::ChildComponent& childComponent = m_children.Get(parent);

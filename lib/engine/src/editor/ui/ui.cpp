@@ -229,7 +229,7 @@ void HierarchyPanel::DrawEntityNode(Entity entity) {
 
 
 void UIManager::RenderPrimitiveOp(Scene *scene) {
-    if (m_primitiveData.entity == UINT32_MAX)
+    if (m_primitiveData.entity == UINT32_MAX && m_ctx.p_selectionManager->GetActiveSelected() == m_primitiveData.entity)
     {return;}
     if (m_primitiveData.type != PrimitiveType::Cube && m_primitiveData.type != PrimitiveType::Plane) {
         ImGui::Begin("Primitive Properties");

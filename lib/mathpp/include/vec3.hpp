@@ -1,5 +1,5 @@
 #pragma once
-
+#include "vec2.hpp"
 
 namespace mathpp {
     template <typename T>
@@ -35,6 +35,9 @@ namespace mathpp {
             z -= rhs.z;
             return *this;
         }
+        vec2<T> xy() const {
+            return vec2<T>{x, y};
+        }
     };
 
     template <typename T>
@@ -50,8 +53,16 @@ namespace mathpp {
         return vec3<T>(-a.x, -a.y, -a.z);
     }
     template <typename T>
+    vec3<T> operator*(const vec3<T>& lhs, const vec3<T>& rhs) {
+        return vec3<T>(lhs.x* rhs.x, lhs.y* rhs.y, lhs.z* rhs.z);
+    }
+    template <typename T>
     vec3<T> operator/(const vec3<T>& lhs, const T s) { return vec3<T>(lhs.x/s, lhs.y/s, lhs.z/s); }
-;
+    template<typename T>
+    vec3<T> operator/(const vec3<T>& lhs, const vec3<T>& rhs) {
+        return vec3<T>(lhs.x / rhs.x, lhs.y / rhs.y, lhs.z / rhs.z);
+    }
+
 
     using vec3f = vec3<float>;
     using vec3d = vec3<double>;

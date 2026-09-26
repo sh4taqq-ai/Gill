@@ -7,6 +7,7 @@
 
 
 class TransformSystem;
+class Hierarchy;
 class SelectionManager;
 using Entity = uint32_t;
 struct Ray;
@@ -14,9 +15,10 @@ struct Ray;
 class GizmoController {
 public:
     ~GizmoController();
-    void Init(float width, float height,GizmoData* gizmoData,TransformSystem* transformSystem,SelectionManager* selectionManager);
+    void Init(float width, float height,GizmoData* gizmoData,TransformSystem* transformSystem,SelectionManager* selectionManager,Hierarchy* hierarchy);
     void Begin(const mathpp::mat4f& view, const mathpp::mat4f& proj, float mouseX, float mouseY);
     bool Apply(const mathpp::mat4f& view, const mathpp::mat4f& proj,float mouseX, float mouseY);
+    void Cancel();
     GizmoAxis GetActiveAxis() const;
     bool IsDragging();
     void End();
@@ -36,8 +38,10 @@ private:
     GizmoData* p_gizmoData;
     TransformSystem* p_transformSystem;
     SelectionManager* p_selectionManager;
+    Hierarchy* p_hierarchy;
     mathpp::vec3f m_pivotStartPos;
     mathpp::vec3f m_dragStartRadial;
+    float m_scaleStartT;
     std::unordered_map<Entity,TransformSnapshot> um_worldTransforms;
     float m_width, m_height;
     mathpp::vec3f m_transformAxis;
